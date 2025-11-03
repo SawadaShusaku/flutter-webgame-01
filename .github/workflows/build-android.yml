@@ -1,0 +1,49 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # 手動実行を許可
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: リポジトリをチェックアウト
+      uses: actions/checkout@v4
+
+    - name: Java 17 をセットアップ
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Flutter をセットアップ
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.35.7'
+        channel: 'stable'
+
+    - name: Flutter の依存関係をインストール
+      run: flutter pub get
+
+    - name: Flutter Doctor で環境を確認
+      run: flutter doctor -v
+
+    - name: デバッグAPKをビルド
+      run: flutter build apk --debug
+
+    - name: APKファイルをアップロード
+      uses: actions/upload-artifact@v4
+      with:
+        name: space-invaders-debug-apk
+        path: build/app/outputs/flutter-apk/app-debug.apk
+        retention-days: 30
+
+    - name: ビルド情報を表示
+      run: |
+        echo "✅ APKのビルドが完了しました"
+        ls -lh build/app/outputs/flutter-apk/
