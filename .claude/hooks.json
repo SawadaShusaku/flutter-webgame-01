@@ -1,0 +1,31 @@
+{
+  "hooks": [
+    {
+      "event": "SessionEnd",
+      "script": ".claude/scripts/notify.sh 'セッション終了しました'",
+      "description": "セッション終了時に音声で通知"
+    },
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Bash",
+        "args": {
+          "command": "flutter test*"
+        }
+      },
+      "script": ".claude/scripts/notify.sh 'テストが完了しました'",
+      "description": "Flutter テスト完了時に音声で通知"
+    },
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Bash",
+        "args": {
+          "command": "flutter build*"
+        }
+      },
+      "script": ".claude/scripts/notify.sh 'ビルドが完了しました'",
+      "description": "Flutter ビルド完了時に音声で通知"
+    }
+  ]
+}
