@@ -3,6 +3,8 @@ import 'hex_tile.dart';
 import 'vertex.dart';
 import 'edge.dart';
 import 'development_card.dart';
+import 'trade.dart';
+import 'robber.dart';
 import 'enums.dart';
 
 /// ゲーム状態全体
@@ -13,13 +15,15 @@ class GameState {
   final List<Vertex> vertices;
   final List<Edge> edges;
   final List<DevelopmentCard> developmentCardDeck;
+  final List<Harbor> harbors;
 
   GamePhase phase;
   int currentPlayerIndex;
   int turnNumber;
 
   DiceRoll? lastDiceRoll;
-  String? robberHexId;  // 盗賊の位置
+  Robber? robber;  // 盗賊（初期位置は砂漠タイル）
+  TradeOffer? currentTradeOffer;  // 現在の交易提案
 
   final List<GameEvent> eventLog;
 
@@ -30,13 +34,16 @@ class GameState {
     required this.vertices,
     required this.edges,
     required this.developmentCardDeck,
+    List<Harbor>? harbors,
     this.phase = GamePhase.setup,
     this.currentPlayerIndex = 0,
     this.turnNumber = 0,
     this.lastDiceRoll,
-    this.robberHexId,
+    this.robber,
+    this.currentTradeOffer,
     List<GameEvent>? eventLog,
-  }) : eventLog = eventLog ?? [];
+  }) : harbors = harbors ?? [],
+       eventLog = eventLog ?? [];
 
   /// 現在のプレイヤー
   Player get currentPlayer => players[currentPlayerIndex];
