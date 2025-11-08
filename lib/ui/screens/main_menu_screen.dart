@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'game_screen.dart';
 import 'space_invaders_screen.dart';
+import 'setup_screen.dart';
 
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({super.key});
@@ -43,6 +44,19 @@ class MainMenuScreen extends StatelessWidget {
                   _MenuButton(
                     text: '新しいゲーム',
                     icon: Icons.add_circle_outline,
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const SetupScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  _MenuButton(
+                    text: 'ゲーム画面（デバッグ）',
+                    icon: Icons.games,
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
