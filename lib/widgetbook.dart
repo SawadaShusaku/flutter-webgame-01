@@ -5,6 +5,7 @@ import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
 import 'ui/screens/title_screen.dart';
 import 'ui/screens/main_menu_screen.dart';
 import 'ui/screens/game_screen.dart';
+import 'ui/screens/setup_screen.dart';
 import 'ui/screens/space_invaders_screen.dart';
 
 void main() {
@@ -37,6 +38,15 @@ class WidgetbookApp extends StatelessWidget {
                 WidgetbookUseCase(
                   name: 'Default',
                   builder: (context) => const MainMenuScreen(),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'Setup Screen',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => const SetupScreen(),
                 ),
               ],
             ),
