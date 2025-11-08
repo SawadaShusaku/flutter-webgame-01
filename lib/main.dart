@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:math';
+import 'catan_widgets.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,453 +11,244 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Space Invaders',
-      theme: ThemeData.dark(),
-      home: const InvadersGame(),
+      title: 'Catan Widgets Demo',
+      theme: ThemeData.light(),
+      home: const CatanBoardDemo(),
     );
   }
 }
 
-class InvadersGame extends StatefulWidget {
-  const InvadersGame({super.key});
+class CatanBoardDemo extends StatefulWidget {
+  const CatanBoardDemo({super.key});
 
   @override
-  State<InvadersGame> createState() => _InvadersGameState();
+  State<CatanBoardDemo> createState() => _CatanBoardDemoState();
 }
 
-class _InvadersGameState extends State<InvadersGame> {
-  // ゲーム設定
-  static const double gameWidth = 400;
-  static const double gameHeight = 600;
-
-  // プレイヤー
-  double playerX = gameWidth / 2;
-  static const double playerY = gameHeight - 80;
-  static const double playerWidth = 40;
-  static const double playerHeight = 30;
-  static const double playerSpeed = 5;
-
-  // 敵
-  List<Invader> invaders = [];
-  double invaderDirection = 1;
-  int invaderMoveDownCounter = 0;
-
-  // 弾
-  List<Bullet> playerBullets = [];
-  List<Bullet> enemyBullets = [];
-
-  // ゲーム状態
-  int score = 0;
-  bool gameOver = false;
-  Timer? gameTimer;
+class _CatanBoardDemoState extends State<CatanBoardDemo> {
+  late List<BoardTileData> tiles;
+  late List<BoardVertexData> vertices;
+  late List<BoardEdgeData> edges;
+  late HexLayout layout;
 
   @override
   void initState() {
     super.initState();
-    initGame();
-    startGame();
+
+    // レイアウトの初期化
+    layout = const HexLayout(
+      orientation: HexOrientation.flatTop,
+      size: 50.0,
+      origin: Offset.zero,
+    );
+
+    // 標準ボードのタイルを生成
+    tiles = BoardDataGenerator.generateStandardBoard();
+
+    // 頂点と辺を生成
+    vertices = BoardDataGenerator.generateVertices(tiles, layout);
+    edges = BoardDataGenerator.generateEdges(tiles, layout);
+
+    // デモ用：いくつかの頂点と辺に建設物と道路を配置
+    _addDemoBuildings();
   }
 
-  void initGame() {
-    // 敵を5x3のグリッドで配置
-    invaders.clear();
-    for (int row = 0; row < 3; row++) {
-      for (int col = 0; col < 5; col++) {
-        invaders.add(Invader(
-          x: 60 + col * 60.0,
-          y: 50 + row * 50.0,
-        ));
-      }
+  void _addDemoBuildings() {
+    // デモ用の建設物と道路を追加
+    if (vertices.length > 10 && edges.length > 10) {
+      // 赤プレイヤーの集落
+      vertices = List.from(vertices);
+      vertices[5] = BoardVertexData(
+        vertexId: vertices[5].vertexId,
+        position: vertices[5].position,
+        buildingType: BuildingType.settlement,
+        playerColor: PlayerColor.red,
+      );
+
+      // 青プレイヤーの都市
+      vertices[15] = BoardVertexData(
+        vertexId: vertices[15].vertexId,
+        position: vertices[15].position,
+        buildingType: BuildingType.city,
+        playerColor: PlayerColor.blue,
+      );
+
+      // 緑プレイヤーの集落
+      vertices[25] = BoardVertexData(
+        vertexId: vertices[25].vertexId,
+        position: vertices[25].position,
+        buildingType: BuildingType.settlement,
+        playerColor: PlayerColor.green,
+      );
+
+      // 黄プレイヤーの集落
+      vertices[35] = BoardVertexData(
+        vertexId: vertices[35].vertexId,
+        position: vertices[35].position,
+        buildingType: BuildingType.settlement,
+        playerColor: PlayerColor.yellow,
+      );
+
+      // 道路を追加
+      edges = List.from(edges);
+      edges[3] = BoardEdgeData(
+        edgeId: edges[3].edgeId,
+        startPosition: edges[3].startPosition,
+        endPosition: edges[3].endPosition,
+        hasRoad: true,
+        playerColor: PlayerColor.red,
+      );
+
+      edges[10] = BoardEdgeData(
+        edgeId: edges[10].edgeId,
+        startPosition: edges[10].startPosition,
+        endPosition: edges[10].endPosition,
+        hasRoad: true,
+        playerColor: PlayerColor.blue,
+      );
+
+      edges[20] = BoardEdgeData(
+        edgeId: edges[20].edgeId,
+        startPosition: edges[20].startPosition,
+        endPosition: edges[20].endPosition,
+        hasRoad: true,
+        playerColor: PlayerColor.green,
+      );
     }
-
-    playerX = gameWidth / 2;
-    playerBullets.clear();
-    enemyBullets.clear();
-    score = 0;
-    gameOver = false;
-    invaderDirection = 1;
-  }
-
-  void startGame() {
-    gameTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (!gameOver) {
-        updateGame();
-      }
-    });
-  }
-
-  void updateGame() {
-    setState(() {
-      // プレイヤーの弾を移動
-      playerBullets.forEach((bullet) {
-        bullet.y -= 8;
-      });
-      playerBullets.removeWhere((bullet) => bullet.y < 0);
-
-      // 敵の弾を移動
-      enemyBullets.forEach((bullet) {
-        bullet.y += 5;
-      });
-      enemyBullets.removeWhere((bullet) => bullet.y > gameHeight);
-
-      // 敵を移動
-      invaderMoveDownCounter++;
-      if (invaderMoveDownCounter > 20) {
-        invaderMoveDownCounter = 0;
-
-        bool shouldMoveDown = false;
-        for (var invader in invaders) {
-          invader.x += invaderDirection * 20;
-          if (invader.x <= 0 || invader.x >= gameWidth - 40) {
-            shouldMoveDown = true;
-          }
-        }
-
-        if (shouldMoveDown) {
-          invaderDirection *= -1;
-          for (var invader in invaders) {
-            invader.y += 30;
-            invader.x += invaderDirection * 20;
-          }
-        }
-
-        // ランダムに敵が弾を撃つ
-        if (invaders.isNotEmpty && Random().nextDouble() < 0.3) {
-          var shooter = invaders[Random().nextInt(invaders.length)];
-          enemyBullets.add(Bullet(x: shooter.x + 15, y: shooter.y + 30));
-        }
-      }
-
-      // 衝突判定：プレイヤーの弾と敵
-      for (var bullet in List.from(playerBullets)) {
-        for (var invader in List.from(invaders)) {
-          if (checkCollision(
-            bullet.x, bullet.y, 4, 10,
-            invader.x, invader.y, 30, 30,
-          )) {
-            playerBullets.remove(bullet);
-            invaders.remove(invader);
-            score += 10;
-            break;
-          }
-        }
-      }
-
-      // 衝突判定：敵の弾とプレイヤー
-      for (var bullet in enemyBullets) {
-        if (checkCollision(
-          bullet.x, bullet.y, 4, 10,
-          playerX - playerWidth / 2, playerY, playerWidth, playerHeight,
-        )) {
-          gameOver = true;
-          gameTimer?.cancel();
-          break;
-        }
-      }
-
-      // 敵が下まで来たらゲームオーバー
-      for (var invader in invaders) {
-        if (invader.y > gameHeight - 100) {
-          gameOver = true;
-          gameTimer?.cancel();
-          break;
-        }
-      }
-
-      // 全ての敵を倒したら勝利
-      if (invaders.isEmpty) {
-        gameOver = true;
-        gameTimer?.cancel();
-      }
-    });
-  }
-
-  bool checkCollision(double x1, double y1, double w1, double h1,
-                      double x2, double y2, double w2, double h2) {
-    return x1 < x2 + w2 &&
-           x1 + w1 > x2 &&
-           y1 < y2 + h2 &&
-           y1 + h1 > y2;
-  }
-
-  void movePlayer(double direction) {
-    setState(() {
-      playerX += direction * playerSpeed;
-      playerX = playerX.clamp(playerWidth / 2, gameWidth - playerWidth / 2);
-    });
-  }
-
-  void shootBullet() {
-    if (playerBullets.length < 3) {
-      setState(() {
-        playerBullets.add(Bullet(x: playerX, y: playerY));
-      });
-    }
-  }
-
-  void restartGame() {
-    gameTimer?.cancel();
-    initGame();
-    startGame();
-  }
-
-  @override
-  void dispose() {
-    gameTimer?.cancel();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // スコア表示
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'SCORE: $score',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+      appBar: AppBar(
+        title: const Text('Catan Board Widgets Demo'),
+        backgroundColor: Colors.brown,
+      ),
+      body: Column(
+        children: [
+          // 情報パネル
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            color: Colors.brown.shade100,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Catan Board Widgets Demo',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ),
-
-            // ゲーム画面
-            Container(
-              width: gameWidth,
-              height: gameHeight,
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                border: Border.all(color: Colors.green, width: 2),
-              ),
-              child: Stack(
-                children: [
-                  // 星空背景
-                  CustomPaint(
-                    size: Size(gameWidth, gameHeight),
-                    painter: StarsPainter(),
-                  ),
-
-                  // プレイヤー
-                  Positioned(
-                    left: playerX - playerWidth / 2,
-                    top: playerY,
-                    child: CustomPaint(
-                      size: const Size(playerWidth, playerHeight),
-                      painter: PlayerPainter(),
-                    ),
-                  ),
-
-                  // 敵
-                  ...invaders.map((invader) => Positioned(
-                    left: invader.x,
-                    top: invader.y,
-                    child: CustomPaint(
-                      size: const Size(30, 30),
-                      painter: InvaderPainter(),
-                    ),
-                  )),
-
-                  // プレイヤーの弾
-                  ...playerBullets.map((bullet) => Positioned(
-                    left: bullet.x - 2,
-                    top: bullet.y,
-                    child: Container(
-                      width: 4,
-                      height: 10,
-                      color: Colors.yellow,
-                    ),
-                  )),
-
-                  // 敵の弾
-                  ...enemyBullets.map((bullet) => Positioned(
-                    left: bullet.x - 2,
-                    top: bullet.y,
-                    child: Container(
-                      width: 4,
-                      height: 10,
-                      color: Colors.red,
-                    ),
-                  )),
-
-                  // ゲームオーバー表示
-                  if (gameOver)
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          border: Border.all(color: Colors.green, width: 3),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              invaders.isEmpty ? 'YOU WIN!' : 'GAME OVER',
-                              style: const TextStyle(
-                                color: Colors.green,
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Final Score: $score',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // コントロールボタン
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => movePlayer(-1),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.all(20),
-                    ),
-                    child: const Icon(Icons.arrow_back, size: 30),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    onPressed: shootBullet,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.all(20),
-                      shape: const CircleBorder(),
-                    ),
-                    child: const Icon(Icons.rocket_launch, size: 30),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    onPressed: () => movePlayer(1),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.all(20),
-                    ),
-                    child: const Icon(Icons.arrow_forward, size: 30),
-                  ),
-                ],
-              ),
-            ),
-
-            // リスタートボタン
-            if (gameOver)
-              ElevatedButton(
-                onPressed: restartGame,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                const SizedBox(height: 8),
+                Text('タイル数: ${tiles.length}'),
+                Text('頂点数: ${vertices.length}'),
+                Text('辺数: ${edges.length}'),
+                const SizedBox(height: 8),
+                const Text(
+                  'ピンチでズーム、ドラッグでパン操作ができます',
+                  style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
                 ),
-                child: const Text(
-                  'RESTART',
-                  style: TextStyle(fontSize: 20),
+              ],
+            ),
+          ),
+          // ボード表示
+          Expanded(
+            child: CatanBoardWidget(
+              tiles: tiles,
+              layout: layout,
+              vertices: vertices,
+              edges: edges,
+              onTileTap: (coordinate) {
+                debugPrint('Tile tapped: $coordinate');
+              },
+              onVertexTap: (vertexId) {
+                debugPrint('Vertex tapped: $vertexId');
+              },
+              onEdgeTap: (edgeId) {
+                debugPrint('Edge tapped: $edgeId');
+              },
+            ),
+          ),
+          // 操作パネル
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            color: Colors.brown.shade100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _resetBoard,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('リセット'),
                 ),
-              ),
-          ],
-        ),
+                ElevatedButton.icon(
+                  onPressed: _addRandomBuilding,
+                  icon: const Icon(Icons.add_home),
+                  label: const Text('建物追加'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _addRandomRoad,
+                  icon: const Icon(Icons.add_road),
+                  label: const Text('道路追加'),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
-}
 
-// データクラス
-class Invader {
-  double x;
-  double y;
-
-  Invader({required this.x, required this.y});
-}
-
-class Bullet {
-  double x;
-  double y;
-
-  Bullet({required this.x, required this.y});
-}
-
-// カスタムペインター
-class PlayerPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.green
-      ..style = PaintingStyle.fill;
-
-    // 三角形の宇宙船
-    final path = Path()
-      ..moveTo(size.width / 2, 0)
-      ..lineTo(0, size.height)
-      ..lineTo(size.width, size.height)
-      ..close();
-
-    canvas.drawPath(path, paint);
+  void _resetBoard() {
+    setState(() {
+      vertices = BoardDataGenerator.generateVertices(tiles, layout);
+      edges = BoardDataGenerator.generateEdges(tiles, layout);
+      _addDemoBuildings();
+    });
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+  void _addRandomBuilding() {
+    setState(() {
+      final random = DateTime.now().millisecondsSinceEpoch;
+      final index = random % vertices.length;
+      final colors = [
+        PlayerColor.red,
+        PlayerColor.blue,
+        PlayerColor.green,
+        PlayerColor.yellow
+      ];
+      final types = [BuildingType.settlement, BuildingType.city];
 
-class InvaderPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.purple
-      ..style = PaintingStyle.fill;
-
-    // シンプルな敵の形
-    canvas.drawRect(
-      Rect.fromLTWH(5, 10, 20, 15),
-      paint,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(0, 15, 30, 10),
-      paint,
-    );
-
-    // 目
-    paint.color = Colors.red;
-    canvas.drawCircle(const Offset(10, 17), 2, paint);
-    canvas.drawCircle(const Offset(20, 17), 2, paint);
+      vertices = List.from(vertices);
+      vertices[index] = BoardVertexData(
+        vertexId: vertices[index].vertexId,
+        position: vertices[index].position,
+        buildingType: types[random % types.length],
+        playerColor: colors[random % colors.length],
+      );
+    });
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+  void _addRandomRoad() {
+    setState(() {
+      final random = DateTime.now().millisecondsSinceEpoch;
+      final index = random % edges.length;
+      final colors = [
+        PlayerColor.red,
+        PlayerColor.blue,
+        PlayerColor.green,
+        PlayerColor.yellow
+      ];
 
-class StarsPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-
-    final random = Random(42); // 固定シードで同じ星の配置
-    for (int i = 0; i < 50; i++) {
-      final x = random.nextDouble() * size.width;
-      final y = random.nextDouble() * size.height;
-      canvas.drawCircle(Offset(x, y), 1, paint);
-    }
+      edges = List.from(edges);
+      edges[index] = BoardEdgeData(
+        edgeId: edges[index].edgeId,
+        startPosition: edges[index].startPosition,
+        endPosition: edges[index].endPosition,
+        hasRoad: true,
+        playerColor: colors[random % colors.length],
+      );
+    });
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
