@@ -1,5 +1,110 @@
 {
   "allowedCommands": [
-    "flutter"
-  ]
+    "flutter",
+    "git",
+    "tmux"
+  ],
+
+  "project": {
+    "name": "Catan Board Game",
+    "type": "flutter-web-game",
+    "mainLanguage": "dart"
+  },
+
+  "development": {
+    "parallelAgents": 5,
+    "worktreePrefix": "worktree-agent",
+    "branchPrefix": "feature/agent",
+    "workingDirectory": "/root/test_web_app"
+  },
+
+  "tmux": {
+    "sessionName": "catan-dev",
+    "paneCount": 5,
+    "paneAssignments": {
+      "0": "models",
+      "1": "services",
+      "2": "ui-screens",
+      "3": "ui-widgets",
+      "4": "integration"
+    }
+  },
+
+  "git": {
+    "mainBranch": "main",
+    "developBranch": "develop",
+    "commitMessagePrefix": true,
+    "autoSync": false,
+    "conflictStrategy": "manual-review"
+  },
+
+  "flutter": {
+    "webRenderer": "canvaskit",
+    "buildMode": "debug",
+    "hotReload": true
+  },
+
+  "communication": {
+    "progressReportFormat": "[AGENT-{id}] {status}: {message}",
+    "errorReportFormat": "[AGENT-{id}] ERROR: {error}",
+    "completionFormat": "[AGENT-{id}] DONE: {task}"
+  },
+
+  "fileWatching": {
+    "watchPaths": [
+      "lib/**/*.dart",
+      "pubspec.yaml",
+      "docs/**/*.md"
+    ],
+    "ignorePatterns": [
+      "build/",
+      ".dart_tool/",
+      "*.g.dart"
+    ]
+  },
+
+  "developmentEnvironment": {
+    "note": "重要: ローカルFlutter SDKはPRoot環境で正常に動作しない（ELFヘッダーエラー）",
+    "localFlutterSDK": {
+      "status": "broken",
+      "issue": "invalid ELF header in PRoot Ubuntu environment",
+      "workaround": "GitHub Actionsを使用してビルド"
+    },
+    "developmentWorkflow": {
+      "description": "GitHub Actionsベースの開発フロー",
+      "steps": [
+        "1. コードをローカルで編集",
+        "2. GitHubにpush",
+        "3. GitHub Actionsが自動で2つのAPKをビルド",
+        "4. Actionsページからビルド済みAPKをダウンロード",
+        "5. Androidデバイスにインストールして動作確認"
+      ],
+      "githubActions": {
+        "workflowFile": ".github/workflows/build-android.yml",
+        "triggers": [
+          "push to main branch",
+          "pull_request to main",
+          "manual workflow_dispatch"
+        ],
+        "artifacts": [
+          {
+            "name": "space-invaders-game-apk",
+            "description": "ゲーム本体のAPK",
+            "path": "build/app/outputs/flutter-apk/app-debug.apk"
+          },
+          {
+            "name": "space-invaders-widgetbook-apk",
+            "description": "Widgetbook開発ツールのAPK",
+            "path": "build/app/outputs/flutter-apk/app-debug.apk"
+          }
+        ],
+        "retentionDays": 30
+      }
+    },
+    "currentProject": {
+      "documentation": "カタン風ボードゲームの詳細な開発計画 (docs/catan-game-plan.md)",
+      "actualImplementation": "Space Invadersゲーム (lib/main.dart)",
+      "note": "ドキュメントと実装が異なるプロジェクトを指している"
+    }
+  }
 }
