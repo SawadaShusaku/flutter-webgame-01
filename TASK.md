@@ -1,36 +1,30 @@
-# Services担当タスク
+# Phase 3: 通常建設サービスと資源消費
 
-## 役割
-ビジネスロジックの実装
+## タスク概要
+通常プレイフェーズでの建設機能を実装してください。
 
-## フェーズ1の担当タスク
+## 実装内容
 
-### 1. BoardGenerator (services/board_generator.dart)
-- 19枚の六角形タイルを配置
-- 数字チップ（2-12）をランダムに配置
-- 砂漠タイルの処理
-- 頂点（Vertex）と辺（Edge）の生成
+### 1. `lib/services/construction_service.dart` を作成
+- 通常フェーズでの建設ロジック
+- 集落建設: `buildSettlementNormalPhase()`
+- 都市アップグレード: `upgradeToCity()`
+- 道路建設: `buildRoadNormalPhase()`
+- 資源消費処理を含める
 
-### 2. ResourceService (services/resource_service.dart)
-- 資源の配布ロジック
-- サイコロの目に応じた資源生産
-- 資源の譲渡・交換処理
+### 2. `lib/services/resource_manager.dart` を作成
+- 資源の消費: `consumeResources(Player, Map<ResourceType, int>)`
+- 資源の追加: `addResources(Player, Map<ResourceType, int>)`
+- 資源チェック: `hasEnoughResources(Player, Map<ResourceType, int>)`
 
-### 3. GameService (services/game_service.dart)
-- ゲーム全体の管理
-- ターン管理
-- ゲーム状態の更新
+### 3. 既存の `game_controller.dart` を拡張
+- `upgradeToCity(String vertexId)` メソッド追加
+- 通常フェーズの建設を `construction_service` に委譲
 
-## 依存関係
-- models/ のデータモデルに依存
-- HexTile, Vertex, Edge, Player, ResourceType などを使用
+## 重要ポイント
+- `validation_service.dart` を使ってルール検証
+- `BuildingCosts` から正確なコストを取得
+- プレイヤーの建設数制限をチェック
+- 都市アップグレード時は集落数を-1、都市数を+1
 
-## 成果物
-- lib/services/board_generator.dart
-- lib/services/resource_service.dart
-- lib/services/game_service.dart
-
-## 完了条件
-- 六角形ボードが正しく生成される
-- 資源配布ロジックが動作する
-- ゲーム状態を管理できる
+完成したら commit してください。
