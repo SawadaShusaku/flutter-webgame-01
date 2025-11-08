@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 // modelsパッケージからimport
-import '../../../models/lib/models/hex_tile.dart';
-import '../../../models/lib/models/vertex.dart';
-import '../../../models/lib/models/edge.dart';
-import '../../../models/lib/models/building.dart';
-import '../../../models/lib/models/road.dart';
-import '../../../models/lib/models/player.dart';
-import '../../../models/lib/models/enums.dart';
+import 'models/hex_tile.dart';
+import 'models/vertex.dart';
+import 'models/edge.dart';
+import 'models/building.dart';
+import 'models/road.dart';
+import 'models/player.dart';
+import 'models/enums.dart';
 
 // servicesパッケージからimport
-import '../../../services/lib/services/board_generator.dart';
+import 'services/board_generator.dart';
 
 // ui-widgetsからimport
 import 'ui/widgets/board/game_board_widget.dart';
