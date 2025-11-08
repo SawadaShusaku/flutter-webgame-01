@@ -6,3 +6,4 @@ library;
 export 'board_generator.dart';
 export 'resource_service.dart';
 export 'game_service.dart';
+export 'building_service.dart';
