@@ -47,33 +47,96 @@
 - ✅ 頂点・辺のID生成と正規化
 - ✅ カタンボードレイアウト生成（標準19タイル、拡張版）
 
-#### 6. デモアプリケーション (`lib/main.dart`)
-- ✅ インタラクティブなボード表示
-- ✅ ズーム・パン操作対応
-- ✅ 建物・道路の動的追加機能
+#### 6. GameBoardWidget (`lib/ui/widgets/board/game_board_widget.dart`)
+- ✅ BoardGeneratorと統合された実際のゲームボード描画
+- ✅ modelsパッケージの型を使用（HexTile, Vertex, Edge, Building, Road, Player）
+- ✅ タップ可能な頂点・辺のインタラクション
+- ✅ ハイライト機能（配置可能な位置の表示）
+- ✅ ズーム・パン機能
+- ✅ プレイヤーカラーの表示
+
+#### 7. ゲームボードデモ (`lib/game_board_demo.dart`)
+- ✅ BoardGeneratorを使用した実際のボード生成
+- ✅ 集落・都市・道路の配置機能
+- ✅ プレイヤー切り替え機能
+- ✅ 配置ルールの実装（距離ルールなど）
+- ✅ インタラクティブなUI
+
+#### 8. デモ選択画面 (`lib/main.dart`)
+- ✅ 2つのデモを選択可能
+- ✅ ゲームボードデモ: 実際のゲームロジック付き
+- ✅ シンプルデモ: 基本ウィジェットのテスト用
 
 ## ファイル構成
 
 ```
 lib/
-├── catan_widgets.dart              # エクスポートファイル
-├── main.dart                       # デモアプリケーション
+├── catan_widgets.dart                      # エクスポートファイル
+├── main.dart                               # デモ選択画面
+├── game_board_demo.dart                    # ゲームボードデモ
 ├── utils/
-│   └── hex_math.dart              # 六角形座標計算ユーティリティ
+│   └── hex_math.dart                      # 六角形座標計算ユーティリティ
 ├── ui/
 │   ├── widgets/
 │   │   └── board/
-│   │       ├── hex_tile_widget.dart   # 六角形タイルウィジェット
-│   │       ├── vertex_widget.dart     # 頂点ウィジェット
-│   │       └── edge_widget.dart       # 辺ウィジェット
+│   │       ├── hex_tile_widget.dart       # 六角形タイルウィジェット（レガシー）
+│   │       ├── vertex_widget.dart         # 頂点ウィジェット（レガシー）
+│   │       ├── edge_widget.dart           # 辺ウィジェット（レガシー）
+│   │       └── game_board_widget.dart     # ゲームボード統合ウィジェット（推奨）
 │   └── painters/
-│       └── board_painter.dart     # ボードペインター
-└── widgetbook.dart                # Widgetbookエントリーポイント
+│       └── board_painter.dart             # ボードペインター（レガシー）
+└── widgetbook.dart                        # Widgetbookエントリーポイント
 ```
 
 ## 使用方法
 
-### 基本的な使い方
+### GameBoardWidget（推奨）
+
+BoardGeneratorを使用した実際のゲームボード：
+
+```dart
+import 'package:catan_widgets/catan_widgets.dart';
+// modelsとservicesパッケージをimport
+import 'package:models/models.dart';
+import 'package:services/services.dart';
+
+// ボード生成
+final generator = BoardGenerator();
+final board = generator.generateBoard(randomize: true);
+
+// プレイヤー作成
+final players = {
+  'player1': Player(
+    id: 'player1',
+    name: 'プレイヤー1',
+    color: PlayerColor.red,
+  ),
+  // ... 他のプレイヤー
+};
+
+// ボード表示
+GameBoardWidget(
+  hexTiles: board.hexTiles,
+  vertices: board.vertices,
+  edges: board.edges,
+  players: players,
+  onVertexTap: (vertex) {
+    print('頂点タップ: ${vertex.id}');
+  },
+  onEdgeTap: (edge) {
+    print('辺タップ: ${edge.id}');
+  },
+  onHexTileTap: (hexTile) {
+    print('タイルタップ: ${hexTile.id}');
+  },
+  highlightedVertexIds: {'v_1', 'v_5'}, // ハイライトする頂点
+  highlightedEdgeIds: {'e_2'},          // ハイライトする辺
+)
+```
+
+### レガシーウィジェット（テスト用）
+
+カスタムレイアウトでの使用：
 
 ```dart
 import 'package:catan_widgets/catan_widgets.dart';
@@ -160,11 +223,28 @@ EdgeWidget(
 
 ## 依存関係
 
-このパッケージは、将来的に以下のパッケージと統合される予定です：
+このパッケージは以下のパッケージと統合されています：
 
-- `models` - ゲームデータモデル（HexTile, Vertex, Edge, Building, Road等）
-  - 現在は仮の型定義を使用
-  - modelsパッケージ完成後に統合
+- `models` - ゲームデータモデル（HexTile, Vertex, Edge, Building, Road, Player等）
+  - ✅ 統合済み: GameBoardWidgetで使用
+  - レガシーウィジェット（HexTileWidget, VertexWidget, EdgeWidget）は独自の型定義を使用
+
+- `services` - ゲームロジック・サービス
+  - ✅ 統合済み: BoardGeneratorを使用してボードを生成
+  - 19枚のタイル、頂点、辺を自動生成
+
+### 注意
+
+現在、modelsとservicesパッケージは相対パスでimportしています。
+本番環境では、pubspec.yamlで依存関係を正式に定義する必要があります：
+
+```yaml
+dependencies:
+  models:
+    path: ../models
+  services:
+    path: ../services
+```
 
 ## 完了条件チェック
 
@@ -184,7 +264,21 @@ EdgeWidget(
 flutter run
 ```
 
-デモアプリでは以下の操作が可能です：
+### ゲームボードデモ
+
+実際のゲームロジックを含むインタラクティブなデモ：
+
+- **プレイヤー切り替え**: 4人のプレイヤー間で切り替え可能
+- **集落配置**: 頂点をタップして集落を配置（距離ルール適用）
+- **都市アップグレード**: 集落を都市にアップグレード
+- **道路配置**: 辺をタップして道路を配置
+- **ハイライト機能**: 配置可能な位置を自動的にハイライト
+- **ズーム・パン**: ピンチでズーム、ドラッグでパン操作
+
+### シンプルデモ
+
+基本ウィジェットのテスト用デモ：
+
 - ピンチでズーム
 - ドラッグでパン
 - 「建物追加」ボタンでランダムな位置に建物を配置
@@ -193,13 +287,19 @@ flutter run
 
 ## TODO（将来の拡張）
 
-- [ ] modelsパッケージとの統合
-- [ ] アニメーション効果の追加
+- [x] modelsパッケージとの統合
+- [x] servicesパッケージ（BoardGenerator）との統合
+- [x] 実際のゲームボード描画機能
+- [x] インタラクティブな建設物・道路配置
+- [ ] アニメーション効果の追加（建設物配置時、サイコロなど）
 - [ ] サウンド効果の追加
-- [ ] より詳細な建物デザイン
+- [ ] より詳細な建物デザイン（3D風など）
 - [ ] ハーバー（港）の描画
-- [ ] ゲームログの表示
+- [ ] ゲームログの表示パネル
 - [ ] AIプレイヤーの視覚化
+- [ ] カード表示ウィジェット
+- [ ] リソース管理UIパネル
+- [ ] pubspec.yamlでの依存関係の正式化
 
 ## ライセンス
 

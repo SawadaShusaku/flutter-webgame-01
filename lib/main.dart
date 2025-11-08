@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'catan_widgets.dart';
+import 'game_board_demo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,19 +14,122 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Catan Widgets Demo',
       theme: ThemeData.light(),
-      home: const CatanBoardDemo(),
+      home: const DemoSelectionScreen(),
     );
   }
 }
 
-class CatanBoardDemo extends StatefulWidget {
-  const CatanBoardDemo({super.key});
+/// デモ選択画面
+class DemoSelectionScreen extends StatelessWidget {
+  const DemoSelectionScreen({super.key});
 
   @override
-  State<CatanBoardDemo> createState() => _CatanBoardDemoState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Catan Widgets Demo'),
+        backgroundColor: Colors.brown,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'カタンウィジェットデモ',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '表示するデモを選択してください',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 48),
+              _buildDemoCard(
+                context,
+                title: '🎮 ゲームボードデモ',
+                description: 'BoardGeneratorを使用した実際のゲームボード\n集落・都市・道路の配置が可能',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GameBoardDemo(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildDemoCard(
+                context,
+                title: '🎨 シンプルデモ',
+                description: '基本ウィジェットのテスト用デモ\nカスタムレイアウトとボードデータ',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SimpleCatanBoardDemo(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDemoCard(
+    BuildContext context, {
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 4,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                description,
+                style: const TextStyle(fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _CatanBoardDemoState extends State<CatanBoardDemo> {
+/// シンプルなカタンボードデモ（旧デモ）
+class SimpleCatanBoardDemo extends StatefulWidget {
+  const SimpleCatanBoardDemo({super.key});
+
+  @override
+  State<SimpleCatanBoardDemo> createState() => _SimpleCatanBoardDemoState();
+}
+
+class _SimpleCatanBoardDemoState extends State<SimpleCatanBoardDemo> {
   late List<BoardTileData> tiles;
   late List<BoardVertexData> vertices;
   late List<BoardEdgeData> edges;
