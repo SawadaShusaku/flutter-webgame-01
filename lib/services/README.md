@@ -4,7 +4,88 @@
 
 ## 実装済みサービス
 
-### 1. BoardGenerator (`board_generator.dart`)
+### 1. BuildingService (`building_service.dart`) ⭐ NEW
+
+**役割**: 建設物の配置管理と初期配置フェーズの実装
+
+**主な機能**:
+
+**初期配置フェーズ（フェーズ2）**:
+- プレイヤーの順番決め（サイコロによる）
+- 1巡目の配置管理（順番通り）
+  - 各プレイヤーが集落1つ + 道路1本を配置
+- 2巡目の配置管理（逆順）
+  - 各プレイヤーが集落1つ + 道路1本を配置
+  - 2巡目の集落周辺から初期資源を獲得
+- 配置進行状況の追跡
+
+**配置ルールの検証**:
+- 距離ルールのチェック（隣接する頂点に建設物がないか）
+- 道路接続ルールのチェック（通常プレイ時）
+- 配置可能な頂点・辺の取得
+
+**使用例**:
+```dart
+final buildingService = BuildingService();
+
+// 初期配置フェーズを開始
+var setupState = buildingService.startSetupPhase(gameState);
+
+// プレイヤーが順番決めのためにサイコロを振る
+for (final player in gameState.players) {
+  final (newSetupState, roll) = buildingService.rollForOrder(
+    setupState,
+    player.id,
+  );
+  setupState = newSetupState;
+  print('${player.name}: $roll');
+}
+
+// 配置順を確定
+final (_, finalSetupState, orderedPlayerIds) =
+    buildingService.finalizePlayerOrder(gameState, setupState);
+setupState = finalSetupState;
+
+// 1巡目: 集落を配置
+final availableVertices = buildingService.getAvailableVertices(
+  gameState,
+  setupState,
+);
+
+final (_, newState1, success1) = buildingService.placeInitialSettlement(
+  gameState,
+  setupState,
+  availableVertices.first,
+  currentPlayerId,
+);
+
+// 1巡目: 道路を配置
+final availableEdges = buildingService.getAvailableEdges(
+  gameState,
+  newState1,
+);
+
+final (_, newState2, success2) = buildingService.placeInitialRoad(
+  gameState,
+  newState1,
+  availableEdges.first,
+  currentPlayerId,
+);
+
+// 初期配置が完了したかチェック
+if (buildingService.isSetupComplete(setupState)) {
+  print('初期配置完了！ゲーム本編開始');
+}
+```
+
+**状態管理**:
+- `SetupState`: 初期配置フェーズの状態を管理
+  - `SetupPhase`: 現在のフェーズ（順番決め、1巡目集落、1巡目道路、2巡目集落、2巡目道路、完了）
+  - 現在のプレイヤーインデックス
+  - 逆順フラグ（2巡目）
+  - 最後に配置した集落のID
+
+### 2. BoardGenerator (`board_generator.dart`)
 
 **役割**: ゲームボードの生成
 
@@ -28,7 +109,7 @@ print('辺数: ${board.edges.length}');       // 72
 print('砂漠タイルID: ${board.desertHexId}');
 ```
 
-### 2. ResourceService (`resource_service.dart`)
+### 3. ResourceService (`resource_service.dart`)
 
 **役割**: 資源の管理と配布
 
@@ -68,7 +149,7 @@ service.playerTrade(
 );
 ```
 
-### 3. GameService (`game_service.dart`)
+### 4. GameService (`game_service.dart`)
 
 **役割**: ゲーム全体の進行管理
 
