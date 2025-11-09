@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
+import 'package:provider/provider.dart';
 
+import 'controllers/game_controller.dart';
 import 'ui/screens/title_screen.dart';
 import 'ui/screens/main_menu_screen.dart';
 import 'ui/screens/game_screen.dart';
 import 'ui/screens/setup_screen.dart';
+import 'ui/screens/normal_play_screen.dart';
 import 'ui/screens/space_invaders_screen.dart';
 
 void main() {
@@ -46,7 +49,22 @@ class WidgetbookApp extends StatelessWidget {
               useCases: [
                 WidgetbookUseCase(
                   name: 'Default',
-                  builder: (context) => const SetupScreen(),
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (_) => GameController(),
+                    child: const SetupScreen(),
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'Normal Play Screen',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (_) => GameController()..startNormalPlay(),
+                    child: const NormalPlayScreen(),
+                  ),
                 ),
               ],
             ),

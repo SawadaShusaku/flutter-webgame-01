@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'controllers/game_controller.dart';
 import 'ui/screens/title_screen.dart';
 
 void main() {
@@ -10,10 +12,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Catan',
-      theme: ThemeData.dark(),
-      home: const TitleScreen(),
+    return ChangeNotifierProvider(
+      create: (_) => GameController(),
+      child: MaterialApp(
+        title: 'Catan',
+        theme: ThemeData.dark(),
+        home: const TitleScreen(),
+      ),
     );
   }
 }

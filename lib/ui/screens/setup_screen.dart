@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
+import '../../controllers/game_controller.dart';
+import 'normal_play_screen.dart';
 
 enum SetupPhase {
   placeSettlement,
@@ -157,8 +160,18 @@ class _SetupScreenState extends State<SetupScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(); // SetupScreenも閉じる
+              Navigator.of(context).pop(); // ダイアログを閉じる
+
+              // GameControllerに通常プレイ開始を通知
+              final gameController = Provider.of<GameController>(context, listen: false);
+              gameController.startNormalPlay();
+
+              // NormalPlayScreenへ遷移
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const NormalPlayScreen(),
+                ),
+              );
             },
             child: const Text('OK'),
           ),
