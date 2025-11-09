@@ -1,39 +1,37 @@
-# Phase 3: プレイヤーハンドと建設UI
+# Phase 6: 発展カードUIの実装
 
 ## タスク概要
-プレイヤーの手札表示と建設アクションUIを実装してください。
+発展カードの表示と使用UIを実装してください。
 
 ## 実装内容
 
-### 1. `lib/ui/widgets/player/player_hand_widget.dart` を作成
-- プレイヤーの資源カード表示
-- 各資源タイプごとの枚数表示
-- リソースアイコン（絵文字）と数値
-- コンパクトな横並びレイアウト
-- 例: 🌲×3 🧱×2 🐑×1 🌾×0 ⛰️×2
+### 1. `lib/ui/widgets/cards/development_card_widget.dart` を作成
+- 発展カードのビジュアル表示
+- カードタイプごとの異なるデザイン
+- カード使用ボタン（使用可能な場合）
+- カードの説明テキスト
 
-### 2. `lib/ui/widgets/player/player_info_widget.dart` を作成
-- プレイヤー情報カード
-- 表示内容:
-  - プレイヤー名とカラー
-  - 勝利点数
-  - 建設数（集落/都市/道路）
-  - 発展カード枚数
+### 2. `lib/ui/widgets/cards/card_hand_widget.dart` を作成
+- プレイヤーの発展カード一覧表示
+- 横スクロール可能なカードリスト
+- 各カードをタップで詳細表示
+- 使用可能/不可の視覚的表示
 
-### 3. `lib/ui/widgets/actions/build_actions_widget.dart` を作成
-- 建設アクションボタンパネル
-- ボタン:
-  - 集落建設（コスト表示付き）
-  - 都市アップグレード（コスト表示付き）
-  - 道路建設（コスト表示付き）
-  - 発展カード購入（コスト表示付き）
-- 資源不足時はボタン無効化
+### 3. `lib/ui/widgets/actions/card_action_dialog.dart` を作成
+- カード使用時のダイアログ
+- 騎士カード: 盗賊移動先選択
+- 資源発見: 資源2枚選択
+- 資源独占: 資源タイプ選択
+- 街道建設: 道路2本配置
 
-### 4. `lib/ui/widgets/actions/victory_points_widget.dart` を作成
-- 詳細な勝利点内訳表示
+### 4. `lib/ui/widgets/game_info/achievements_widget.dart` を作成
+- 最長交易路の表示（保持者とルート長）
+- 最大騎士力の表示（保持者と騎士数）
+- ボーナス点の視覚的表示
 
 ## 重要ポイント
-- `constants.dart` の `BuildingCosts` を使用
-- `GameColors` でプレイヤーカラー取得
+- カードは裏面/表面の表示切り替え
+- 使用制限の明確な表示
+- アニメーション（カードめくり等）
 
 完成したら commit してください。

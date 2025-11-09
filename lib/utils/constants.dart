@@ -162,6 +162,20 @@ class ResourceIcons {
     TerrainType.mountains: '⛰️',
     TerrainType.desert: '🏜️',
   };
+
+  /// 発展カードアイコン
+  static const Map<DevelopmentCardType, String> developmentCardIcons = {
+    DevelopmentCardType.knight: '🛡️',
+    DevelopmentCardType.victoryPoint: '🏆',
+    DevelopmentCardType.roadBuilding: '🛤️',
+    DevelopmentCardType.yearOfPlenty: '🎁',
+    DevelopmentCardType.monopoly: '💰',
+  };
+
+  /// 発展カードアイコンを取得
+  static String getDevelopmentCardIcon(DevelopmentCardType cardType) {
+    return developmentCardIcons[cardType] ?? '❓';
+  }
 }
 
 /// サイコロの出現確率
