@@ -1,40 +1,37 @@
-# Phase 4: 盗賊システム基礎
+# 緊急修正: その他ファイルの全importパスを修正
 
-## タスク概要
-盗賊（robber）システムの基礎を実装してください。
+## タスク
+以下のファイルのimportパスを修正してください。
 
-## 実装内容
+## 対象ファイル
+1. lib/main.dart
+2. lib/widgetbook.dart
+3. lib/ui/painters/ 内のファイル
+4. その他エラーが出ているファイル
 
-### 1. `lib/models/robber.dart` を作成
-- Robber クラス
-- 現在位置（HexTile ID）
+## 修正ルール
 
-### 2. `lib/services/robber_service.dart` を作成
-- 盗賊移動ロジック: `moveRobber(GameState, String hexId)`
-- 資源を奪う: `stealResourceFrom(Player target, Player thief)`
-- 対象プレイヤー取得: `getPlayersOnHex(GameState, String hexId)`
-- 7が出た時の処理: `handleSevenRolled(GameState)`
+### main.dartの場合
+```dart
+✅ import 'services/game_controller.dart';
+✅ import 'ui/screens/title_screen.dart';
+```
 
-### 3. `lib/services/discard_service.dart` を作成
-- 資源破棄処理
-- 8枚以上持っているプレイヤーを検出
-- 半分の枚数を破棄させる
+### paintersの場合
+```dart
+✅ import '../../models/xxx.dart';
+✅ import '../../utils/xxx.dart';
+```
 
-### 4. `lib/ui/widgets/robber/robber_widget.dart` を作成
-- 盗賊アイコンの表示
-- 現在いるタイルに表示
+## 実行方法
+1. 各ファイルを開く
+2. import文を確認
+3. 正しいパスに修正
+4. **全てのファイルを修正したらコミット**
 
-### 5. GameState に robber フィールド追加
-- `game_state.dart` を更新
-- `Robber? robber` フィールド追加
-- 初期位置は砂漠タイル
+```bash
+git add -A
+git commit -m "fix(misc): その他ファイルのimportパスを修正"
+```
 
-## 重要ポイント
-- 盗賊は資源を生産しないタイルに配置
-- 盗賊がいるタイルは資源生産されない
-- 7が出たら:
-  1. 8枚以上のプレイヤーは半分破棄
-  2. 現在プレイヤーが盗賊を移動
-  3. 対象プレイヤーから1枚ランダムに奪う
-
-完成したら commit してください。
+完了したら報告してください。
