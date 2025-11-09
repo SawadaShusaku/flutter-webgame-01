@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 // modelsパッケージからimport
-import '../../../../../models/lib/models/development_card.dart';
-import '../../../../../models/lib/models/enums.dart';
+import '../../../../models/lib/models/development_card.dart';
+import '../../../../models/lib/models/enums.dart';
 
 // utilsからimport
 import '../../../utils/constants.dart';

@@ -4,16 +4,16 @@ import 'dart:math' as math;
 // modelsパッケージからimport
 // TODO: pubspec.yamlに依存関係を追加した後、正しいimportパスに変更
 // 今は相対パスでmodelsを参照
-import '../../../../../models/lib/models/hex_tile.dart';
-import '../../../../../models/lib/models/vertex.dart';
-import '../../../../../models/lib/models/edge.dart';
-import '../../../../../models/lib/models/building.dart';
-import '../../../../../models/lib/models/road.dart';
-import '../../../../../models/lib/models/player.dart';
-import '../../../../../models/lib/models/enums.dart';
+import '../../../../models/lib/models/hex_tile.dart';
+import '../../../../models/lib/models/vertex.dart';
+import '../../../../models/lib/models/edge.dart';
+import '../../../../models/lib/models/building.dart';
+import '../../../../models/lib/models/road.dart';
+import '../../../../models/lib/models/player.dart';
+import '../../../../models/lib/models/enums.dart';
 
 // servicesパッケージからimport
-import '../../../../../services/lib/services/board_generator.dart';
+import '../../../../services/lib/services/board_generator.dart';
 
 /// ゲームボード全体を表示するウィジェット
 class GameBoardWidget extends StatefulWidget {
