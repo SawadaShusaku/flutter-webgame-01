@@ -1,37 +1,56 @@
-# Phase 6: 発展カードUIの実装
+# 緊急修正: ui/widgets/ 内の全importパスを修正
 
-## タスク概要
-発展カードの表示と使用UIを実装してください。
+## タスク
+lib/ui/widgets/ 配下の全サブディレクトリのDartファイルのimportパスを修正してください。
 
-## 実装内容
+## 修正ルール
 
-### 1. `lib/ui/widgets/cards/development_card_widget.dart` を作成
-- 発展カードのビジュアル表示
-- カードタイプごとの異なるデザイン
-- カード使用ボタン（使用可能な場合）
-- カードの説明テキスト
+### 1. modelsのimport
+```dart
+❌ import '../../../../models/xxx.dart';
+✅ import '../../../models/xxx.dart';
+```
 
-### 2. `lib/ui/widgets/cards/card_hand_widget.dart` を作成
-- プレイヤーの発展カード一覧表示
-- 横スクロール可能なカードリスト
-- 各カードをタップで詳細表示
-- 使用可能/不可の視覚的表示
+### 2. servicesのimport
+```dart
+❌ import '../../../../services/xxx.dart';
+✅ import '../../../services/xxx.dart';
+```
 
-### 3. `lib/ui/widgets/actions/card_action_dialog.dart` を作成
-- カード使用時のダイアログ
-- 騎士カード: 盗賊移動先選択
-- 資源発見: 資源2枚選択
-- 資源独占: 資源タイプ選択
-- 街道建設: 道路2本配置
+### 3. utilsのimport
+```dart
+❌ import '../../../../utils/xxx.dart';
+✅ import '../../../utils/xxx.dart';
+```
 
-### 4. `lib/ui/widgets/game_info/achievements_widget.dart` を作成
-- 最長交易路の表示（保持者とルート長）
-- 最大騎士力の表示（保持者と騎士数）
-- ボーナス点の視覚的表示
+### 4. 同じwidgets内のimport
+```dart
+# widgets/board/ から widgets/player/ を参照する場合
+✅ import '../player/player_info_widget.dart';
 
-## 重要ポイント
-- カードは裏面/表面の表示切り替え
-- 使用制限の明確な表示
-- アニメーション（カードめくり等）
+# widgets/actions/ から widgets/board/ を参照する場合
+✅ import '../board/game_board_widget.dart';
+```
 
-完成したら commit してください。
+## 対象ディレクトリ
+- actions/
+- board/
+- cards/
+- log/
+- player/
+- robber/
+- trade/
+- game_info/
+
+## 実行方法
+1. 各サブディレクトリの.dartファイルを開く
+2. import文を確認
+3. 上記ルールに従って修正
+4. **全てのファイルを修正したらコミット**
+
+```bash
+git add -A
+git commit -m "fix(ui-widgets): 全importパスを修正"
+```
+
+完了したら報告してください。
