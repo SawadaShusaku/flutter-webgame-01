@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'main_menu_screen.dart';
+import 'package:test_web_app/ui/screens/main_menu_screen.dart';
 
 class TitleScreen extends StatefulWidget {
   const TitleScreen({super.key});

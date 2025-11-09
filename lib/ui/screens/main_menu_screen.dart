@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'game_screen.dart';
-import 'space_invaders_screen.dart';
-import 'setup_screen.dart';
+import 'package:test_web_app/ui/screens/game_screen.dart';
+import 'package:test_web_app/ui/screens/space_invaders_screen.dart';
+import 'package:test_web_app/ui/screens/setup_screen.dart';
 
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({super.key});

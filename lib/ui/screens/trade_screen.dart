@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../controllers/game_controller.dart';
-import '../../models/game_state.dart';
-import '../widgets/trade/resource_selector.dart';
-import '../widgets/trade/trade_offer_widget.dart';
+import 'package:test_web_app/controllers/game_controller.dart';
+import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/ui/widgets/trade/resource_selector.dart';
+import 'package:test_web_app/ui/widgets/trade/trade_offer_widget.dart';
 
 /// 交易画面
 class TradeScreen extends StatefulWidget {
