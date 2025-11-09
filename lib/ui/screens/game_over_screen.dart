@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/victory_service.dart';
+import 'package:test_web_app/services/victory_service.dart';
 
 /// ゲーム終了画面
 ///
