@@ -1,8 +1,8 @@
-import '../models/game_state.dart';
-import '../models/player.dart';
-import '../models/trade.dart';
-import '../models/enums.dart';
-import '../utils/constants.dart';
+import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/trade.dart';
+import 'package:test_web_app/models/enums.dart';
+import 'package:test_web_app/utils/constants.dart';
 
 /// 交易システムを管理するサービス
 class TradeService {
@@ -198,5 +198,24 @@ class TradeService {
     }
 
     return true;
+  }
+
+  /// 銀行交易が可能かチェック（4:1レート）
+  ///
+  /// @param player 交易するプレイヤー
+  /// @param give 提供する資源
+  /// @return 4枚以上所持していればtrue
+  bool canBankTrade(Player player, ResourceType give) {
+    return (player.resources[give] ?? 0) >= GameConstants.bankTradeRate;
+  }
+
+  /// 交易可能な資源のリストを取得
+  ///
+  /// @param player 交易するプレイヤー
+  /// @return 4枚以上所持している資源のリスト
+  List<ResourceType> getTradeableResources(Player player) {
+    return ResourceType.values
+        .where((r) => (player.resources[r] ?? 0) >= GameConstants.bankTradeRate)
+        .toList();
   }
 }

@@ -15,6 +15,9 @@ import 'package:test_web_app/services/resource_service.dart';
 import 'package:test_web_app/services/game_service.dart';
 import 'package:test_web_app/services/trade_service.dart';
 import 'package:test_web_app/services/cpu_service.dart';
+import 'package:test_web_app/services/resource_discard_service.dart';
+import 'package:test_web_app/services/robber_service.dart';
+import 'package:test_web_app/services/victory_point_service.dart';
 
 /// ゲーム全体を管理するコントローラー
 /// UIから呼び出される主要なエントリポイント
@@ -27,6 +30,9 @@ class GameController extends ChangeNotifier {
   final GameService _gameService = GameService();
   final TradeService _tradeService = TradeService();
   final CPUService _cpuService = CPUService();
+  final ResourceDiscardService _discardService = ResourceDiscardService();
+  final RobberService _robberService = RobberService();
+  final VictoryPointService _victoryPointService = VictoryPointService();
   final Random _random = Random();
 
   GameState? get state => _state;
@@ -102,8 +108,8 @@ class GameController extends ChangeNotifier {
 
     // 7が出た場合
     if (dice.total == 7) {
-      // TODO: 資源破棄フェーズへ
-      _state!.phase = GamePhase.robberPlacement;
+      await startSevenPhase();
+      return;
     } else {
       // 資源生産
       _resourceService.distributeResources(dice.total, _state!);
@@ -119,9 +125,8 @@ class GameController extends ChangeNotifier {
     }
 
     // 勝利判定
-    final winner = _turnService.checkVictory(_state!);
-    if (winner != null) {
-      _state!.phase = GamePhase.gameOver;
+    checkGameOver();
+    if (_state!.phase == GamePhase.gameOver) {
       notifyListeners();
       return;
     }
@@ -150,6 +155,7 @@ class GameController extends ChangeNotifier {
     );
 
     if (success) {
+      updateVictoryPoints();
       notifyListeners();
     }
 
@@ -305,9 +311,19 @@ class GameController extends ChangeNotifier {
   /// 都市を建設（集落からアップグレード）
   Future<bool> buildCity(String vertexId) async {
     if (_state == null) return false;
-    // TODO: 実装
-    notifyListeners();
-    return true;
+
+    final success = _gameService.upgradeToCity(
+      _state!,
+      vertexId,
+      _state!.currentPlayer.id,
+    );
+
+    if (success) {
+      updateVictoryPoints();
+      notifyListeners();
+    }
+
+    return success;
   }
 
   /// デバッグ用: 資源を追加
@@ -399,5 +415,153 @@ class GameController extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  // ===== Pane L: 銀行交易メソッド =====
+
+  /// 銀行交易実行（UIから呼ばれる）
+  ///
+  /// @param give 提供する資源（4枚）
+  /// @param receive 受け取る資源（1枚）
+  /// @return 成功したらtrue
+  Future<bool> executeBankTrade(ResourceType give, ResourceType receive) async {
+    if (_state == null || _state!.phase != GamePhase.normalPlay) {
+      return false;
+    }
+
+    final success = _tradeService.executeBankTrade(_state!.currentPlayer, give, receive);
+    if (success) {
+      notifyListeners();
+    }
+
+    return success;
+  }
+
+  /// 銀行交易可能か
+  ///
+  /// @param give 提供する資源
+  /// @return 4枚以上所持していればtrue
+  bool canBankTrade(ResourceType give) {
+    if (_state == null) return false;
+    return _tradeService.canBankTrade(_state!.currentPlayer, give);
+  }
+
+  /// 交易可能な資源リスト
+  ///
+  /// @return 4枚以上所持している資源のリスト
+  List<ResourceType> getTradeableResources() {
+    if (_state == null) return [];
+    return _tradeService.getTradeableResources(_state!.currentPlayer);
+  }
+
+  // ===== Pane I: 資源破棄フェーズメソッド =====
+
+  /// 7が出た時の処理開始
+  Future<void> startSevenPhase() async {
+    if (_state == null) return;
+
+    // 資源破棄が必要なプレイヤーを確認
+    final needDiscard = _discardService.getPlayersNeedingDiscard(_state!);
+
+    if (needDiscard.isNotEmpty) {
+      _state!.phase = GamePhase.resourceDiscard;
+      notifyListeners();
+    } else {
+      // 破棄不要なら盗賊配置へ
+      _state!.phase = GamePhase.robberPlacement;
+      notifyListeners();
+    }
+  }
+
+  /// 資源破棄実行（UIから呼ばれる）
+  Future<bool> executeDiscard(Player player, Map<ResourceType, int> resources) async {
+    if (_state == null) return false;
+
+    final success = _discardService.discardResources(player, resources);
+    if (success) {
+      notifyListeners();
+
+      // 全員の破棄が完了したか確認
+      final stillNeedDiscard = _discardService.getPlayersNeedingDiscard(_state!);
+      if (stillNeedDiscard.isEmpty) {
+        _state!.phase = GamePhase.robberPlacement;
+        notifyListeners();
+      }
+    }
+
+    return success;
+  }
+
+  // ===== Pane J: 盗賊移動+資源強奪メソッド =====
+
+  /// 盗賊移動（UIから呼ばれる）
+  ///
+  /// @param hexId 移動先タイルID
+  /// @return 成功したらtrue
+  Future<bool> moveRobber(String hexId) async {
+    if (_state == null || _state!.phase != GamePhase.robberPlacement) {
+      return false;
+    }
+
+    final success = _robberService.moveRobber(_state!, hexId);
+    if (success) {
+      notifyListeners();
+    }
+
+    return success;
+  }
+
+  /// 資源を奪う（盗賊移動後に呼ばれる）
+  ///
+  /// @param targetPlayerId 奪う対象プレイヤーのID
+  /// @return 奪った資源タイプ（資源がない場合はnull）
+  Future<ResourceType?> stealFromPlayer(String targetPlayerId) async {
+    if (_state == null) return null;
+
+    final targetPlayer = _state!.players.firstWhere((p) => p.id == targetPlayerId);
+    final stolenResource = _robberService.stealResource(targetPlayer);
+
+    if (stolenResource != null) {
+      // 手番プレイヤーに資源を追加
+      _state!.currentPlayer.resources[stolenResource] =
+        _state!.currentPlayer.resources[stolenResource]! + 1;
+
+      notifyListeners();
+    }
+
+    // 盗賊フェーズ終了、通常プレイに戻る
+    _state!.phase = GamePhase.normalPlay;
+    notifyListeners();
+
+    return stolenResource;
+  }
+
+  /// 盗賊配置可能なプレイヤーを取得
+  ///
+  /// @param hexId タイルID
+  /// @return 隣接プレイヤーのリスト
+  List<Player> getRobberTargets(String hexId) {
+    if (_state == null) return [];
+    return _robberService.getAdjacentPlayers(_state!, hexId, _state!.currentPlayer);
+  }
+
+  // ===== Pane G: 勝利点計算とゲーム終了判定 =====
+
+  /// 勝利点を再計算（建設後に自動実行）
+  void updateVictoryPoints() {
+    if (_state == null) return;
+    _victoryPointService.updateAllVictoryPoints(_state!);
+    notifyListeners();
+  }
+
+  /// 勝利条件チェック（ターン終了時に自動実行）
+  void checkGameOver() {
+    if (_state == null) return;
+
+    final winner = _victoryPointService.getWinner(_state!);
+    if (winner != null) {
+      _state!.phase = GamePhase.gameOver;
+      notifyListeners();
+    }
   }
 }

@@ -6,6 +6,7 @@ import 'package:test_web_app/models/enums.dart';
 import 'package:test_web_app/ui/widgets/board/game_board_widget.dart';
 import 'package:test_web_app/ui/widgets/log/game_log_widget.dart';
 import 'package:test_web_app/ui/widgets/actions/dice_roller.dart';
+import 'package:test_web_app/ui/widgets/bank_trade_dialog.dart';
 import 'package:test_web_app/utils/constants.dart';
 
 class NormalPlayScreen extends StatefulWidget {
@@ -396,6 +397,29 @@ class _NormalPlayScreenState extends State<NormalPlayScreen> {
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 8),
+
+          // 銀行交易ボタン
+          ElevatedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => BankTradeDialog(
+                  player: controller.state!.currentPlayer,
+                  onTrade: (give, receive) async {
+                    await controller.executeBankTrade(give, receive);
+                  },
+                ),
+              );
+            },
+            icon: const Icon(Icons.account_balance),
+            label: const Text('銀行交易'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[700],
+              foregroundColor: Colors.white,
+            ),
           ),
 
           const SizedBox(height: 8),
