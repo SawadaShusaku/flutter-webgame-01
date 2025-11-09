@@ -110,7 +110,89 @@
   "flutter": {
     "webRenderer": "canvaskit",
     "buildMode": "debug",
-    "hotReload": true
+    "hotReload": true,
+    "codingStandards": {
+      "importStyle": {
+        "rule": "ALWAYS use package imports (absolute paths)",
+        "enforcement": "CRITICAL",
+        "reason": "Package imports stick when rearranging files/folders, while relative imports break easily",
+        "correctFormat": "import 'package:test_web_app/models/game_state.dart';",
+        "incorrectFormats": [
+          "import '../models/game_state.dart';",
+          "import '../../models/game_state.dart';",
+          "import '../../../models/game_state.dart';"
+        ],
+        "linterRule": "always_use_package_imports",
+        "rationale": "2025 Flutter best practice: Package imports are more maintainable for medium/large projects"
+      },
+      "projectStructure": {
+        "architecture": "Feature-First",
+        "reason": "Recommended for large projects - scales well and organizes files by feature",
+        "structure": {
+          "lib/": {
+            "models/": "Data models and enums",
+            "services/": "Business logic and state management",
+            "ui/": {
+              "screens/": "Full-page screens",
+              "widgets/": "Reusable UI components (organized by feature)",
+              "painters/": "Custom painters for canvas drawing"
+            },
+            "utils/": "Utility functions and constants",
+            "main.dart": "Application entry point"
+          }
+        },
+        "namingConventions": {
+          "files": "snake_case (e.g., game_controller.dart)",
+          "classes": "PascalCase (e.g., GameController)",
+          "variables": "camelCase (e.g., currentPlayer)",
+          "constants": "camelCase with const (e.g., const maxPlayers = 4)"
+        }
+      },
+      "fileOrganization": {
+        "importOrder": [
+          "1. Dart SDK imports",
+          "2. Flutter SDK imports",
+          "3. Third-party package imports",
+          "4. Project package imports (always use package: syntax)"
+        ],
+        "barrelFiles": {
+          "usage": "Optional - use index.dart or feature.dart to simplify imports",
+          "example": "lib/models/index.dart can export all model files"
+        }
+      },
+      "commonPitfalls": {
+        "avoidRelativeLibImports": {
+          "rule": "NEVER use relative imports from lib/",
+          "bad": "import '../../../models/game_state.dart';",
+          "good": "import 'package:test_web_app/models/game_state.dart';",
+          "consequence": "Relative paths break when files are moved/reorganized"
+        },
+        "avoidOldPaths": {
+          "rule": "Always update imports when moving/renaming files",
+          "examples": [
+            "controllers/ → services/ (update all references)",
+            "widgets/ → widgets/board/ (update import paths)"
+          ]
+        },
+        "deleteUnusedFiles": {
+          "rule": "Delete old files immediately after moving/refactoring",
+          "reason": "Prevents accidental imports of outdated code"
+        }
+      },
+      "verificationSteps": {
+        "beforeCommit": [
+          "1. Search for relative imports: grep -r \"import '../\" lib/",
+          "2. Search for old paths: grep -r \"controllers/\" lib/",
+          "3. Verify no duplicate files exist",
+          "4. Run flutter analyze to check for errors"
+        ],
+        "beforePush": [
+          "1. Ensure all import paths use package: syntax",
+          "2. Verify all files compile without errors",
+          "3. Check GitHub Actions will pass (if possible locally)"
+        ]
+      }
+    }
   },
 
   "communication": {
