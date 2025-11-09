@@ -14,6 +14,8 @@ import '../../../models/lib/models/enums.dart';
 // servicesからimport
 import 'board_generator.dart';
 import 'resource_service.dart';
+import 'development_card_service.dart';
+import 'longest_road_service.dart';
 
 /// ゲーム全体管理サービス
 /// - ゲーム全体の管理
@@ -22,14 +24,21 @@ import 'resource_service.dart';
 class GameService {
   final BoardGenerator _boardGenerator;
   final ResourceService _resourceService;
+  final DevelopmentCardService _developmentCardService;
+  final LongestRoadService _longestRoadService;
   final Random _random;
 
   GameService({
     BoardGenerator? boardGenerator,
     ResourceService? resourceService,
+    DevelopmentCardService? developmentCardService,
+    LongestRoadService? longestRoadService,
     Random? random,
   })  : _boardGenerator = boardGenerator ?? BoardGenerator(),
         _resourceService = resourceService ?? ResourceService(),
+        _developmentCardService =
+            developmentCardService ?? DevelopmentCardService(),
+        _longestRoadService = longestRoadService ?? LongestRoadService(),
         _random = random ?? Random();
 
   /// 新しいゲームを開始
@@ -343,6 +352,14 @@ class GameService {
     // プレイヤーに追加
     player.addDevelopmentCard(card);
 
+    // 購入を通知（同ターン使用制限のため）
+    _developmentCardService.notifyCardPurchased(card);
+
+    // 勝利点カードの場合、勝利点を更新
+    if (card.type == DevelopmentCardType.victoryPoint) {
+      player.victoryPoints = player.calculateVictoryPoints();
+    }
+
     // イベントログに追加
     gameState.logEvent(GameEvent(
       timestamp: DateTime.now(),
@@ -354,12 +371,21 @@ class GameService {
     return card;
   }
 
+  /// ターンを開始
+  ///
+  /// [gameState] ゲーム状態
+  void startTurn(GameState gameState) {
+    _developmentCardService.startTurn();
+  }
+
   /// ターンを終了して次のプレイヤーに進む
   ///
   /// [gameState] ゲーム状態
   void endTurn(GameState gameState) {
     gameState.nextPlayer();
     gameState.phase = GamePhase.normalPlay;
+    // 次のプレイヤーのターンを開始
+    startTurn(gameState);
   }
 
   /// 距離ルールをチェック
@@ -454,37 +480,30 @@ class GameService {
   /// 最長交易路を更新
   ///
   /// [gameState] ゲーム状態
-  void updateLongestRoad(GameState gameState) {
-    int longestLength = 0;
-    Player? longestPlayer;
-
-    for (final player in gameState.players) {
-      final length = _calculateLongestRoadLength(gameState, player.id);
-      if (length >= 5 && length > longestLength) {
-        longestLength = length;
-        longestPlayer = player;
-      }
-    }
-
-    // 最長交易路を更新
-    for (final player in gameState.players) {
-      player.hasLongestRoad = player == longestPlayer;
-      player.victoryPoints = player.calculateVictoryPoints();
-    }
+  ///
+  /// 戻り値: 最長交易路が変更されたかどうか
+  bool updateLongestRoad(GameState gameState) {
+    return _longestRoadService.updateLongestRoad(gameState);
   }
 
-  /// プレイヤーの最長道路の長さを計算（簡易版）
-  int _calculateLongestRoadLength(GameState gameState, String playerId) {
-    // TODO: より正確な最長道路計算アルゴリズムを実装
-    // 現在は道路の総数を返す（簡易版）
-    final player = gameState.players.firstWhere((p) => p.id == playerId);
-    return player.roadsBuilt;
-  }
-
-  /// 最大騎士力を更新
+  /// プレイヤーの最長道路の長さを計算
   ///
   /// [gameState] ゲーム状態
+  /// [playerId] プレイヤーID
+  ///
+  /// 戻り値: 最長道路の長さ
+  int calculateLongestRoadLength(GameState gameState, String playerId) {
+    return _longestRoadService.calculateLongestRoad(gameState, playerId);
+  }
+
+  /// 最大騎士力を更新（廃止予定）
+  ///
+  /// [gameState] ゲーム状態
+  ///
+  /// 注: 最大騎士力の更新はDevelopmentCardServiceで自動的に行われます
+  @Deprecated('Use DevelopmentCardService.playKnightCard instead')
   void updateLargestArmy(GameState gameState) {
+    // 後方互換性のために残す
     int maxKnights = 0;
     Player? largestArmyPlayer;
 
@@ -500,5 +519,116 @@ class GameService {
       player.hasLargestArmy = player == largestArmyPlayer;
       player.victoryPoints = player.calculateVictoryPoints();
     }
+  }
+
+  // ========== 発展カード使用メソッド ==========
+
+  /// 騎士カードを使用
+  ///
+  /// [gameState] ゲーム状態
+  /// [playerId] プレイヤーID
+  /// [card] 使用するカード
+  /// [newRobberHexId] 盗賊の移動先タイルID
+  /// [targetPlayerId] 資源を奪う対象プレイヤーID（nullの場合は奪わない）
+  ///
+  /// 戻り値: 使用結果
+  DevelopmentCardResult playKnightCard(
+    GameState gameState,
+    String playerId,
+    DevelopmentCard card,
+    String newRobberHexId,
+    String? targetPlayerId,
+  ) {
+    return _developmentCardService.playKnightCard(
+      gameState,
+      playerId,
+      card,
+      newRobberHexId,
+      targetPlayerId,
+    );
+  }
+
+  /// 街道建設カードを使用
+  ///
+  /// [gameState] ゲーム状態
+  /// [playerId] プレイヤーID
+  /// [card] 使用するカード
+  ///
+  /// 戻り値: 使用結果
+  DevelopmentCardResult playRoadBuildingCard(
+    GameState gameState,
+    String playerId,
+    DevelopmentCard card,
+  ) {
+    return _developmentCardService.playRoadBuildingCard(
+      gameState,
+      playerId,
+      card,
+    );
+  }
+
+  /// 資源発見カードを使用
+  ///
+  /// [gameState] ゲーム状態
+  /// [playerId] プレイヤーID
+  /// [card] 使用するカード
+  /// [resource1] 獲得する資源1
+  /// [resource2] 獲得する資源2
+  ///
+  /// 戻り値: 使用結果
+  DevelopmentCardResult playYearOfPlentyCard(
+    GameState gameState,
+    String playerId,
+    DevelopmentCard card,
+    ResourceType resource1,
+    ResourceType resource2,
+  ) {
+    return _developmentCardService.playYearOfPlentyCard(
+      gameState,
+      playerId,
+      card,
+      resource1,
+      resource2,
+    );
+  }
+
+  /// 資源独占カードを使用
+  ///
+  /// [gameState] ゲーム状態
+  /// [playerId] プレイヤーID
+  /// [card] 使用するカード
+  /// [resourceType] 奪う資源の種類
+  ///
+  /// 戻り値: 使用結果
+  DevelopmentCardResult playMonopolyCard(
+    GameState gameState,
+    String playerId,
+    DevelopmentCard card,
+    ResourceType resourceType,
+  ) {
+    return _developmentCardService.playMonopolyCard(
+      gameState,
+      playerId,
+      card,
+      resourceType,
+    );
+  }
+
+  /// プレイヤーが使用可能なカードのリストを取得
+  ///
+  /// [player] プレイヤー
+  ///
+  /// 戻り値: 使用可能なカードのリスト
+  List<DevelopmentCard> getPlayableCards(Player player) {
+    return _developmentCardService.getPlayableCards(player);
+  }
+
+  /// プレイヤーのカード種別ごとの枚数を取得
+  ///
+  /// [player] プレイヤー
+  ///
+  /// 戻り値: カード種別ごとの枚数マップ
+  Map<DevelopmentCardType, int> getCardCounts(Player player) {
+    return _developmentCardService.getCardCounts(player);
   }
 }
