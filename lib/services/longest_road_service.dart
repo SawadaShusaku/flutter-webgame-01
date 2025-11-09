@@ -1,8 +1,8 @@
 // modelsからimport
-import '../../../models/lib/models/game_state.dart';
-import '../../../models/lib/models/player.dart';
-import '../../../models/lib/models/edge.dart';
-import '../../../models/lib/models/vertex.dart';
+import '../models/game_state.dart';
+import '../models/player.dart';
+import '../models/edge.dart';
+import '../models/vertex.dart';
 
 /// 最長交易路サービス
 ///
