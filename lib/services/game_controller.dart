@@ -30,10 +30,8 @@ class GameController extends ChangeNotifier {
 
   /// 新しいゲームを開始
   Future<void> startNewGame(GameConfig config) async {
-    // ボード生成
-    final board = _boardGenerator.generateStandardBoard();
-    final vertices = _boardGenerator.generateVertices(board);
-    final edges = _boardGenerator.generateEdges(vertices);
+    // ボード生成（港を含む）
+    final boardData = _boardGenerator.generateBoard(randomize: true);
 
     // プレイヤー作成
     final players = <Player>[];
@@ -53,10 +51,12 @@ class GameController extends ChangeNotifier {
     _state = GameState(
       gameId: 'game_${DateTime.now().millisecondsSinceEpoch}',
       players: players,
-      board: board,
-      vertices: vertices,
-      edges: edges,
+      board: boardData.hexTiles,
+      vertices: boardData.vertices,
+      edges: boardData.edges,
+      harbors: boardData.harbors,
       developmentCardDeck: developmentCards,
+      robberHexId: boardData.desertHexId,
     );
 
     // ゲーム初期化

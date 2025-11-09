@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/hex_tile.dart';
 import '../models/vertex.dart';
 import '../models/edge.dart';
+import '../models/trade.dart';
 import '../models/enums.dart';
 
 /// ボード生成サービス
@@ -19,10 +20,12 @@ class BoardGenerator {
   /// - 数字チップ（2-12）をランダムに配置
   /// - 砂漠タイルの処理
   /// - 頂点（Vertex）と辺（Edge）の生成
+  /// - 港（Harbor）の配置
   ({
     List<HexTile> hexTiles,
     List<Vertex> vertices,
     List<Edge> edges,
+    List<Harbor> harbors,
     String desertHexId,
   }) generateBoard({bool randomize = true}) {
     // 1. タイル配置の生成
@@ -34,13 +37,17 @@ class BoardGenerator {
     // 3. 辺の生成
     final edges = _generateEdges(vertices);
 
-    // 4. 砂漠タイルのIDを取得
+    // 4. 港の生成
+    final harbors = _generateHarbors(randomize: randomize);
+
+    // 5. 砂漠タイルのIDを取得
     final desertHex = hexTiles.firstWhere((hex) => hex.terrain == TerrainType.desert);
 
     return (
       hexTiles: hexTiles,
       vertices: vertices,
       edges: edges,
+      harbors: harbors,
       desertHexId: desertHex.id,
     );
   }
@@ -222,5 +229,60 @@ class BoardGenerator {
     }
 
     return edges;
+  }
+
+  /// 港を生成
+  /// カタンには9つの港がある:
+  /// - 汎用港（3:1）: 4つ
+  /// - 特定資源港（2:1）: 5つ（木材、レンガ、羊毛、小麦、鉱石）
+  List<Harbor> _generateHarbors({bool randomize = true}) {
+    // 港のタイプリスト
+    final harborTypes = [
+      HarborType.generic,
+      HarborType.generic,
+      HarborType.generic,
+      HarborType.generic,
+      HarborType.lumber,
+      HarborType.brick,
+      HarborType.wool,
+      HarborType.grain,
+      HarborType.ore,
+    ];
+
+    if (randomize) {
+      harborTypes.shuffle(_random);
+    }
+
+    // ボードの海岸線に港を配置
+    // 簡略化のため、固定位置に配置（実際のカタンでは海辺の頂点）
+    final harborPositions = [
+      // 上辺
+      ['v_0_0', 'v_0_1'],
+      ['v_1_1', 'v_1_2'],
+      // 右上辺
+      ['v_2_2', 'v_2_3'],
+      // 右下辺
+      ['v_3_3', 'v_3_4'],
+      // 下辺
+      ['v_4_4', 'v_4_5'],
+      ['v_5_5', 'v_5_0'],
+      // 左下辺
+      ['v_6_0', 'v_6_1'],
+      // 左上辺
+      ['v_7_1', 'v_7_2'],
+      ['v_8_2', 'v_8_0'],
+    ];
+
+    final harbors = <Harbor>[];
+    for (int i = 0; i < harborTypes.length; i++) {
+      final harbor = Harbor(
+        id: 'harbor_$i',
+        type: harborTypes[i],
+        vertexIds: harborPositions[i],
+      );
+      harbors.add(harbor);
+    }
+
+    return harbors;
   }
 }
