@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 // modelsパッケージからimport
-import '../../../../models/lib/models/development_card.dart';
-import '../../../../models/lib/models/enums.dart';
+import 'package:test_web_app/models/development_card.dart';
+import 'package:test_web_app/models/enums.dart';
 
 // utilsからimport
-import '../../../utils/constants.dart';
+import 'package:test_web_app/utils/constants.dart';
 
 /// カード使用時のダイアログ
 class CardActionDialog extends StatefulWidget {

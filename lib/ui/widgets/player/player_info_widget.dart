@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 // modelsパッケージからimport
-import '../../../../models/lib/models/player.dart';
-import '../../../../models/lib/models/enums.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/enums.dart';
 
 // utilsからimport
-import '../../../utils/constants.dart';
+import 'package:test_web_app/utils/constants.dart';
 
 /// プレイヤー情報カードを表示するウィジェット
 class PlayerInfoWidget extends StatelessWidget {
