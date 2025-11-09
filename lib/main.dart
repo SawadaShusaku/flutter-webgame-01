@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'controllers/game_controller.dart';
+import 'services/game_controller.dart';
 import 'ui/screens/title_screen.dart';
 
 void main() {

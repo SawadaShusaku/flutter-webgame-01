@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
-import '../../controllers/game_controller.dart';
+import '../../services/game_controller.dart';
 import 'normal_play_screen.dart';
 
 enum SetupPhase {
