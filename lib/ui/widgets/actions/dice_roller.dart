@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:test_web_app/services/dice_service.dart';
+import 'package:test_web_app/models/game_state.dart';
 
 /// サイコロを振るウィジェット
 class DiceRoller extends StatefulWidget {
-  final DiceService diceService;
-  final VoidCallback? onRollComplete;
+  final VoidCallback onRoll;
+  final bool canRoll;
+  final DiceRoll? lastRoll;
   final double size;
 
   const DiceRoller({
     super.key,
-    required this.diceService,
-    this.onRollComplete,
+    required this.onRoll,
+    required this.canRoll,
+    this.lastRoll,
     this.size = 60.0,
   });
 
@@ -24,13 +26,14 @@ class _DiceRollerState extends State<DiceRoller>
   late AnimationController _animationController;
   late Animation<double> _rotationAnimation;
   late Animation<double> _scaleAnimation;
+  bool _isRolling = false;
 
   @override
   void initState() {
     super.initState();
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
@@ -65,149 +68,94 @@ class _DiceRollerState extends State<DiceRoller>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-
-    // DiceServiceの状態変更を監視
-    widget.diceService.addListener(_onDiceServiceChanged);
   }
 
   @override
   void dispose() {
-    widget.diceService.removeListener(_onDiceServiceChanged);
     _animationController.dispose();
     super.dispose();
   }
 
-  void _onDiceServiceChanged() {
-    if (widget.diceService.state == DiceState.rolling) {
-      _animationController.forward(from: 0);
-    } else if (widget.diceService.state == DiceState.finished) {
-      if (widget.onRollComplete != null) {
-        widget.onRollComplete!();
-      }
-    }
-  }
+  Future<void> _handleRoll() async {
+    setState(() => _isRolling = true);
+    _animationController.forward(from: 0.0);
 
-  Future<void> _rollDice() async {
-    if (widget.diceService.isRolling) return;
+    await Future.delayed(const Duration(milliseconds: 500));
+    widget.onRoll();
 
-    try {
-      await widget.diceService.rollDice();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
-        );
-      }
-    }
+    await Future.delayed(const Duration(milliseconds: 100));
+    setState(() => _isRolling = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: widget.diceService,
-      builder: (context, child) {
-        final lastRoll = widget.diceService.lastRoll;
-        final isRolling = widget.diceService.isRolling;
+    final canRollNow = widget.canRoll && !_isRolling;
+    final lastRoll = widget.lastRoll;
 
-        return GestureDetector(
-          onTap: isRolling ? null : _rollDice,
-          child: Container(
-            padding: const EdgeInsets.all(16),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // サイコロ表示
+        if (lastRoll != null) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildDice(lastRoll.die1),
+              const SizedBox(width: 16),
+              _buildDice(lastRoll.die2),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // 合計値表示
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: isRolling
-                  ? Colors.orange.shade200
-                  : Colors.orange.shade100,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.orange.shade700,
-                width: 3,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              color: lastRoll.total == 7
+                  ? Colors.red.shade700
+                  : Colors.orange.shade700,
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // サイコロアイコン
-                Icon(
-                  Icons.casino,
-                  size: 32,
-                  color: Colors.orange.shade900,
-                ),
-                const SizedBox(height: 8),
-
-                // サイコロ表示
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildDice(lastRoll?.die1 ?? 1, isRolling),
-                    const SizedBox(width: 16),
-                    _buildDice(lastRoll?.die2 ?? 1, isRolling),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // 合計値表示
-                if (lastRoll != null)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: lastRoll.isSeven
-                          ? Colors.red.shade700
-                          : Colors.brown.shade700,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '合計: ${lastRoll.total}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                const SizedBox(height: 12),
-
-                // ボタン
-                ElevatedButton.icon(
-                  onPressed: isRolling ? null : _rollDice,
-                  icon: Icon(isRolling ? Icons.hourglass_bottom : Icons.casino),
-                  label: Text(isRolling ? '振っています...' : 'サイコロを振る'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange.shade700,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
+            child: Text(
+              '合計: ${lastRoll.total}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        );
-      },
+        ],
+        const SizedBox(height: 16),
+        // ボタン
+        ElevatedButton.icon(
+          onPressed: canRollNow ? _handleRoll : null,
+          icon: Icon(_isRolling ? Icons.hourglass_bottom : Icons.casino),
+          label: Text(_isRolling ? '振っています...' : 'サイコロを振る'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange.shade700,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: Colors.grey.shade400,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 12,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDice(int value, bool isRolling) {
+  Widget _buildDice(int value) {
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
         return Transform.rotate(
-          angle: isRolling ? _rotationAnimation.value : 0,
+          angle: _isRolling ? _rotationAnimation.value : 0,
           child: Transform.scale(
-            scale: isRolling ? _scaleAnimation.value : 1.0,
+            scale: _isRolling ? _scaleAnimation.value : 1.0,
             child: child,
           ),
         );

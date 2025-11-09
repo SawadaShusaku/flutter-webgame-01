@@ -84,3 +84,11 @@ enum CPUDifficulty {
   normal,  // 普通
   hard,    // 難しい
 }
+
+/// 建設モード
+enum BuildMode {
+  none,        // 建設モードなし
+  settlement,  // 集落建設モード
+  road,        // 道路建設モード
+  city,        // 都市建設モード
+}

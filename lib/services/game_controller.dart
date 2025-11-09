@@ -36,6 +36,10 @@ class GameController extends ChangeNotifier {
   bool get hasRolledDice => _state?.lastDiceRoll != null;
   List<GameEvent> get gameLog => _state?.eventLog ?? [];
 
+  // 建設モード管理
+  BuildMode _buildMode = BuildMode.none;
+  BuildMode get buildMode => _buildMode;
+
   /// 新しいゲームを開始
   Future<void> startNewGame(GameConfig config) async {
     // ボード生成（港を含む）
@@ -308,5 +312,39 @@ class GameController extends ChangeNotifier {
     currentPlayer!.addResource(ResourceType.ore, 2);
 
     notifyListeners();
+  }
+
+  /// 建設モードを設定
+  void setBuildMode(BuildMode mode) {
+    _buildMode = mode;
+    notifyListeners();
+  }
+
+  /// 頂点がタップされた時の処理
+  Future<void> onVertexTapped(String vertexId) async {
+    if (_buildMode == BuildMode.settlement) {
+      final success = await buildSettlement(vertexId);
+      if (success) {
+        _buildMode = BuildMode.none;
+        notifyListeners();
+      }
+    } else if (_buildMode == BuildMode.city) {
+      final success = await buildCity(vertexId);
+      if (success) {
+        _buildMode = BuildMode.none;
+        notifyListeners();
+      }
+    }
+  }
+
+  /// 辺がタップされた時の処理
+  Future<void> onEdgeTapped(String edgeId) async {
+    if (_buildMode == BuildMode.road) {
+      final success = await buildRoad(edgeId);
+      if (success) {
+        _buildMode = BuildMode.none;
+        notifyListeners();
+      }
+    }
   }
 }

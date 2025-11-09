@@ -2,12 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_web_app/services/game_controller.dart';
 import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/models/enums.dart';
 import 'package:test_web_app/ui/widgets/board/game_board_widget.dart';
 import 'package:test_web_app/ui/widgets/log/game_log_widget.dart';
+import 'package:test_web_app/ui/widgets/actions/dice_roller.dart';
 import 'package:test_web_app/utils/constants.dart';
 
-class NormalPlayScreen extends StatelessWidget {
+class NormalPlayScreen extends StatefulWidget {
   const NormalPlayScreen({super.key});
+
+  @override
+  State<NormalPlayScreen> createState() => _NormalPlayScreenState();
+}
+
+class _NormalPlayScreenState extends State<NormalPlayScreen> {
+  DiceRoll? _lastShownDiceRoll;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +34,9 @@ class NormalPlayScreen extends StatelessWidget {
       ),
       body: Consumer<GameController>(
         builder: (context, controller, child) {
+          // サイコロの結果が変わった時にフィードバックを表示
+          _showDiceResultFeedback(context, controller);
+
           return LayoutBuilder(
             builder: (context, constraints) {
               final isWideScreen = constraints.maxWidth > 800;
@@ -39,6 +51,51 @@ class NormalPlayScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  /// サイコロの結果に対するフィードバックを表示
+  void _showDiceResultFeedback(BuildContext context, GameController controller) {
+    final currentRoll = controller.lastDiceRoll;
+
+    // 新しいサイコロの結果が出た場合のみ処理
+    if (currentRoll != null && currentRoll != _lastShownDiceRoll) {
+      _lastShownDiceRoll = currentRoll;
+
+      // ビルド完了後にSnackBarを表示
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        if (currentRoll.total == 7) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.warning, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('7が出ました！盗賊を移動してください'),
+                ],
+              ),
+              backgroundColor: Colors.red.shade700,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.casino, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text('${currentRoll.total}が出ました！資源を獲得'),
+                ],
+              ),
+              backgroundColor: Colors.orange.shade700,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      });
+    }
   }
 
   /// ワイドスクリーン用レイアウト
@@ -64,6 +121,10 @@ class NormalPlayScreen extends StatelessWidget {
                         hexTiles: controller.state?.board ?? [],
                         vertices: controller.state?.vertices ?? [],
                         edges: controller.state?.edges ?? [],
+                        onVertexTap: (vertex) => controller.onVertexTapped(vertex.id),
+                        onEdgeTap: (edge) => controller.onEdgeTapped(edge.id),
+                        highlightedVertexIds: _getHighlightedVertices(controller),
+                        highlightedEdgeIds: _getHighlightedEdges(controller),
                       ),
                     ),
                     // 手札
@@ -117,6 +178,10 @@ class NormalPlayScreen extends StatelessWidget {
                 hexTiles: controller.state?.board ?? [],
                 vertices: controller.state?.vertices ?? [],
                 edges: controller.state?.edges ?? [],
+                onVertexTap: (vertex) => controller.onVertexTapped(vertex.id),
+                onEdgeTap: (edge) => controller.onEdgeTapped(edge.id),
+                highlightedVertexIds: _getHighlightedVertices(controller),
+                highlightedEdgeIds: _getHighlightedEdges(controller),
               ),
               // ログ（オーバーレイ）
               Positioned(
@@ -289,18 +354,12 @@ class NormalPlayScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // サイコロボタン
-          if (!controller.hasRolledDice)
-            ElevatedButton.icon(
-              onPressed: () => controller.rollDice(),
-              icon: const Icon(Icons.casino),
-              label: const Text('サイコロを振る'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange[700],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
+          // サイコロウィジェット
+          DiceRoller(
+            onRoll: () => controller.rollDice(),
+            canRoll: !controller.hasRolledDice,
+            lastRoll: controller.lastDiceRoll,
+          ),
 
           const SizedBox(height: 8),
 
@@ -312,7 +371,8 @@ class NormalPlayScreen extends StatelessWidget {
                   icon: Icons.home,
                   label: '集落',
                   enabled: controller.canBuildSettlement(),
-                  onPressed: () => controller.buildSettlement('v_0'),
+                  isActive: controller.buildMode == BuildMode.settlement,
+                  onPressed: () => controller.setBuildMode(BuildMode.settlement),
                 ),
               ),
               const SizedBox(width: 8),
@@ -321,7 +381,8 @@ class NormalPlayScreen extends StatelessWidget {
                   icon: Icons.location_city,
                   label: '都市',
                   enabled: controller.canBuildCity(),
-                  onPressed: () => controller.buildCity('v_0'),
+                  isActive: controller.buildMode == BuildMode.city,
+                  onPressed: () => controller.setBuildMode(BuildMode.city),
                 ),
               ),
               const SizedBox(width: 8),
@@ -330,7 +391,8 @@ class NormalPlayScreen extends StatelessWidget {
                   icon: Icons.route,
                   label: '道路',
                   enabled: controller.canBuildRoad(),
-                  onPressed: () => controller.buildRoad('e_0'),
+                  isActive: controller.buildMode == BuildMode.road,
+                  onPressed: () => controller.setBuildMode(BuildMode.road),
                 ),
               ),
             ],
@@ -366,6 +428,33 @@ class NormalPlayScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// BuildModeに応じてハイライトする頂点のIDを取得
+  Set<String> _getHighlightedVertices(GameController controller) {
+    if (controller.buildMode == BuildMode.settlement ||
+        controller.buildMode == BuildMode.city) {
+      // 簡易版: 空いている頂点のみハイライト
+      return controller.state?.vertices
+              .where((v) => !v.hasBuilding)
+              .map((v) => v.id)
+              .toSet() ??
+          {};
+    }
+    return {};
+  }
+
+  /// BuildModeに応じてハイライトする辺のIDを取得
+  Set<String> _getHighlightedEdges(GameController controller) {
+    if (controller.buildMode == BuildMode.road) {
+      // 簡易版: 空いている辺のみハイライト
+      return controller.state?.edges
+              .where((e) => !e.hasRoad)
+              .map((e) => e.id)
+              .toSet() ??
+          {};
+    }
+    return {};
   }
 
   void _showGameMenu(BuildContext context) {
@@ -504,6 +593,7 @@ class _BuildButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool enabled;
+  final bool isActive;
   final VoidCallback onPressed;
 
   const _BuildButton({
@@ -511,6 +601,7 @@ class _BuildButton extends StatelessWidget {
     required this.label,
     required this.enabled,
     required this.onPressed,
+    this.isActive = false,
   });
 
   @override
@@ -518,7 +609,7 @@ class _BuildButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: enabled ? onPressed : null,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.brown[700],
+        backgroundColor: isActive ? Colors.green[700] : Colors.brown[700],
         foregroundColor: Colors.white,
         disabledBackgroundColor: Colors.grey[300],
         disabledForegroundColor: Colors.grey[600],

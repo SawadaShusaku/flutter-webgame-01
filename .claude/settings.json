@@ -195,6 +195,13 @@
     }
   },
 
+  "permissions": {
+    "autoApprove": {
+      "tools": ["Task"],
+      "note": "Taskツール（エージェント起動）を自動承認して効率化"
+    }
+  },
+
   "communication": {
     "progressReportFormat": "[AGENT-{id}] {status}: {message}",
     "errorReportFormat": "[AGENT-{id}] ERROR: {error}",
