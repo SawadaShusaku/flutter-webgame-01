@@ -8,6 +8,8 @@
 /// - Game board widget with BoardGenerator integration
 /// - Player info and resource management widgets
 /// - Build actions and victory points widgets
+/// - Development card UI and interactions
+/// - Achievements display (longest road, largest army)
 ///
 /// Usage:
 /// ```dart
@@ -32,6 +34,14 @@ export 'ui/widgets/player/player_info_widget.dart';
 // Action Widgets
 export 'ui/widgets/actions/build_actions_widget.dart';
 export 'ui/widgets/actions/victory_points_widget.dart';
+export 'ui/widgets/actions/card_action_dialog.dart';
+
+// Card Widgets
+export 'ui/widgets/cards/development_card_widget.dart';
+export 'ui/widgets/cards/card_hand_widget.dart';
+
+// Game Info Widgets
+export 'ui/widgets/game_info/achievements_widget.dart';
 
 // Painters
 export 'ui/painters/board_painter.dart';
