@@ -31,6 +31,11 @@ class GameController extends ChangeNotifier {
   Player? get currentPlayer => _state?.currentPlayer;
   GamePhase? get currentPhase => _state?.phase;
 
+  // UIで使用するゲッター
+  DiceRoll? get lastDiceRoll => _state?.lastDiceRoll;
+  bool get hasRolledDice => _state?.lastDiceRoll != null;
+  List<GameEvent> get gameLog => _state?.eventLog ?? [];
+
   /// 新しいゲームを開始
   Future<void> startNewGame(GameConfig config) async {
     // ボード生成（港を含む）
@@ -251,5 +256,57 @@ class GameController extends ChangeNotifier {
     cards.shuffle();
 
     return cards;
+  }
+
+  /// セットアップ完了後、通常プレイを開始
+  void startNormalPlay() {
+    if (_state != null) {
+      _state!.phase = GamePhase.normalPlay;
+      _state!.currentPlayerIndex = 0;
+      _state!.lastDiceRoll = null;
+      notifyListeners();
+    }
+  }
+
+  /// 集落を建設できるか
+  bool canBuildSettlement() {
+    if (_state == null || currentPlayer == null) return false;
+    // TODO: 資源チェック、配置ルールチェック
+    return true;
+  }
+
+  /// 都市を建設できるか
+  bool canBuildCity() {
+    if (_state == null || currentPlayer == null) return false;
+    // TODO: 資源チェック、集落の存在チェック
+    return true;
+  }
+
+  /// 道路を建設できるか
+  bool canBuildRoad() {
+    if (_state == null || currentPlayer == null) return false;
+    // TODO: 資源チェック、配置ルールチェック
+    return true;
+  }
+
+  /// 都市を建設（集落からアップグレード）
+  Future<bool> buildCity(String vertexId) async {
+    if (_state == null) return false;
+    // TODO: 実装
+    notifyListeners();
+    return true;
+  }
+
+  /// デバッグ用: 資源を追加
+  void addDebugResources() {
+    if (currentPlayer == null) return;
+
+    currentPlayer!.addResource(ResourceType.lumber, 2);
+    currentPlayer!.addResource(ResourceType.brick, 2);
+    currentPlayer!.addResource(ResourceType.wool, 2);
+    currentPlayer!.addResource(ResourceType.grain, 2);
+    currentPlayer!.addResource(ResourceType.ore, 2);
+
+    notifyListeners();
   }
 }

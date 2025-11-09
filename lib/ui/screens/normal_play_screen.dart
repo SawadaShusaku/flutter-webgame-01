@@ -59,7 +59,11 @@ class NormalPlayScreen extends StatelessWidget {
                     // ゲームボード
                     Expanded(
                       flex: 3,
-                      child: GameBoardWidget(),
+                      child: GameBoardWidget(
+                        hexTiles: controller.state?.board ?? [],
+                        vertices: controller.state?.vertices ?? [],
+                        edges: controller.state?.edges ?? [],
+                      ),
                     ),
                     // 手札
                     SizedBox(
@@ -82,7 +86,7 @@ class NormalPlayScreen extends StatelessWidget {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: GameLogWidget(logs: controller.gameLog),
+                        child: GameLogWidget(entries: const []),
                       ),
                     ),
                   ],
@@ -108,7 +112,11 @@ class NormalPlayScreen extends StatelessWidget {
           child: Stack(
             children: [
               // ゲームボード
-              GameBoardWidget(),
+              GameBoardWidget(
+                hexTiles: controller.state?.board ?? [],
+                vertices: controller.state?.vertices ?? [],
+                edges: controller.state?.edges ?? [],
+              ),
               // ログ（オーバーレイ）
               Positioned(
                 right: 8,
