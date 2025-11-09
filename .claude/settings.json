@@ -89,7 +89,13 @@
       "script": "/tmp/send_command.sh",
       "format": "/tmp/send_command.sh 0:0.{pane_number} \"command\"",
       "example": "/tmp/send_command.sh 0:0.1 \"claude TASK.md\"",
-      "warning": "セッション名は必ず「0」を使用。catan-devなど別のセッションを作成してはいけない"
+      "warning": "セッション名は必ず「0」を使用。catan-devなど別のセッションを作成してはいけない",
+      "importantNote": "コマンド送信時は必ず2回Enterを押す必要がある",
+      "correctUsage": [
+        "tmux send-keys -t 0:0.1 \"claude TASK.md\" Enter",
+        "tmux send-keys -t 0:0.1 \"\" Enter  # 2回目のEnterが必須！"
+      ],
+      "reason": "PRoot環境の特性により、1回目のEnterだけでは実行されない"
     }
   },
 
