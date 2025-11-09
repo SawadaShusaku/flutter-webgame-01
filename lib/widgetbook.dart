@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
 
-import 'package:test_web_app/main.dart';
+import 'package:test_web_app/models/enums.dart';
+import 'package:test_web_app/models/hex_tile.dart';
+import 'package:test_web_app/models/vertex.dart';
+import 'package:test_web_app/models/edge.dart';
+import 'package:test_web_app/ui/widgets/board/hex_tile_widget.dart';
+import 'package:test_web_app/ui/widgets/board/vertex_widget.dart';
+import 'package:test_web_app/ui/widgets/board/edge_widget.dart';
+import 'package:test_web_app/ui/widgets/robber/robber_widget.dart';
+import 'package:test_web_app/ui/widgets/log/game_log_widget.dart';
+import 'package:test_web_app/ui/widgets/actions/dice_roller.dart';
 
 void main() {
   runApp(const WidgetbookApp());
@@ -17,228 +26,204 @@ class WidgetbookApp extends StatelessWidget {
     return Widgetbook.material(
       directories: [
         WidgetbookCategory(
-          name: 'Space Invaders',
+          name: 'Catan Game',
           children: [
             WidgetbookComponent(
-              name: 'Game',
+              name: 'Board Components',
               useCases: [
                 WidgetbookUseCase(
-                  name: 'Full Game',
-                  builder: (context) => const InvadersGame(),
+                  name: 'Hex Tile - Forest',
+                  builder: (context) => Center(
+                    child: Container(
+                      width: 400,
+                      height: 400,
+                      color: Colors.lightBlue[100],
+                      child: Center(
+                        child: HexTileWidget(
+                          tile: HexTile(
+                            id: 'hex_0',
+                            terrain: TerrainType.forest,
+                            number: 6,
+                            position: const Offset(200, 200),
+                            hasRobber: false,
+                          ),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                WidgetbookUseCase(
+                  name: 'Hex Tile - Mountains',
+                  builder: (context) => Center(
+                    child: Container(
+                      width: 400,
+                      height: 400,
+                      color: Colors.lightBlue[100],
+                      child: Center(
+                        child: HexTileWidget(
+                          tile: HexTile(
+                            id: 'hex_1',
+                            terrain: TerrainType.mountains,
+                            number: 8,
+                            position: const Offset(200, 200),
+                            hasRobber: false,
+                          ),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                WidgetbookUseCase(
+                  name: 'Hex Tile - Desert with Robber',
+                  builder: (context) => Center(
+                    child: Container(
+                      width: 400,
+                      height: 400,
+                      color: Colors.lightBlue[100],
+                      child: Center(
+                        child: HexTileWidget(
+                          tile: HexTile(
+                            id: 'hex_2',
+                            terrain: TerrainType.desert,
+                            number: null,
+                            position: const Offset(200, 200),
+                            hasRobber: true,
+                          ),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                WidgetbookUseCase(
+                  name: 'Vertex - Empty',
+                  builder: (context) => Center(
+                    child: Container(
+                      width: 400,
+                      height: 400,
+                      color: Colors.lightBlue[100],
+                      child: Center(
+                        child: VertexWidget(
+                          vertex: Vertex(
+                            id: 'v_0',
+                            position: const Offset(200, 200),
+                            adjacentHexIds: [],
+                            adjacentEdgeIds: [],
+                          ),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                WidgetbookUseCase(
+                  name: 'Vertex - Settlement',
+                  builder: (context) => Center(
+                    child: Container(
+                      width: 400,
+                      height: 400,
+                      color: Colors.lightBlue[100],
+                      child: Center(
+                        child: VertexWidget(
+                          vertex: Vertex(
+                            id: 'v_1',
+                            position: const Offset(200, 200),
+                            adjacentHexIds: [],
+                            adjacentEdgeIds: [],
+                            buildingType: BuildingType.settlement,
+                            playerId: 'player_0',
+                          ),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                WidgetbookUseCase(
+                  name: 'Edge - Empty',
+                  builder: (context) => Center(
+                    child: Container(
+                      width: 400,
+                      height: 400,
+                      color: Colors.lightBlue[100],
+                      child: Center(
+                        child: EdgeWidget(
+                          edge: Edge(
+                            id: 'e_0',
+                            vertex1Id: 'v_0',
+                            vertex2Id: 'v_1',
+                          ),
+                          vertex1Position: const Offset(150, 200),
+                          vertex2Position: const Offset(250, 200),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                WidgetbookUseCase(
+                  name: 'Edge - Road',
+                  builder: (context) => Center(
+                    child: Container(
+                      width: 400,
+                      height: 400,
+                      color: Colors.lightBlue[100],
+                      child: Center(
+                        child: EdgeWidget(
+                          edge: Edge(
+                            id: 'e_1',
+                            vertex1Id: 'v_0',
+                            vertex2Id: 'v_1',
+                            playerId: 'player_0',
+                          ),
+                          vertex1Position: const Offset(150, 200),
+                          vertex2Position: const Offset(250, 200),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                WidgetbookUseCase(
+                  name: 'Robber',
+                  builder: (context) => Center(
+                    child: Container(
+                      width: 400,
+                      height: 400,
+                      color: Colors.lightBlue[100],
+                      child: const Center(
+                        child: RobberWidget(),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
             WidgetbookComponent(
-              name: 'Components',
+              name: 'Game UI',
               useCases: [
                 WidgetbookUseCase(
-                  name: 'Player Ship',
-                  builder: (context) => Center(
-                    child: Container(
-                      width: 400,
-                      height: 400,
-                      color: Colors.black,
-                      child: Center(
-                        child: CustomPaint(
-                          size: const Size(40, 30),
-                          painter: PlayerPainter(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                WidgetbookUseCase(
-                  name: 'Enemy Invader',
-                  builder: (context) => Center(
-                    child: Container(
-                      width: 400,
-                      height: 400,
-                      color: Colors.black,
-                      child: Center(
-                        child: CustomPaint(
-                          size: const Size(30, 30),
-                          painter: InvaderPainter(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                WidgetbookUseCase(
-                  name: 'Stars Background',
-                  builder: (context) => Center(
-                    child: Container(
-                      width: 400,
-                      height: 600,
-                      color: Colors.grey[900],
-                      child: CustomPaint(
-                        size: const Size(400, 600),
-                        painter: StarsPainter(),
-                      ),
-                    ),
-                  ),
-                ),
-                WidgetbookUseCase(
-                  name: 'Player Bullet',
-                  builder: (context) => Center(
-                    child: Container(
-                      width: 400,
-                      height: 400,
-                      color: Colors.black,
-                      child: Center(
-                        child: Container(
-                          width: 4,
-                          height: 10,
-                          color: Colors.yellow,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                WidgetbookUseCase(
-                  name: 'Enemy Bullet',
-                  builder: (context) => Center(
-                    child: Container(
-                      width: 400,
-                      height: 400,
-                      color: Colors.black,
-                      child: Center(
-                        child: Container(
-                          width: 4,
-                          height: 10,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            WidgetbookComponent(
-              name: 'UI Elements',
-              useCases: [
-                WidgetbookUseCase(
-                  name: 'Score Display',
+                  name: 'Game Log',
                   builder: (context) => Container(
-                    color: Colors.black,
+                    color: Colors.white,
                     padding: const EdgeInsets.all(16.0),
-                    child: const Text(
-                      'SCORE: 1234',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: const GameLogWidget(
+                      entries: [],
                     ),
                   ),
                 ),
                 WidgetbookUseCase(
-                  name: 'Game Over Screen',
+                  name: 'Dice Roller',
                   builder: (context) => Container(
-                    color: Colors.black,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          border: Border.all(color: Colors.green, width: 3),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'GAME OVER',
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              'Final Score: 1234',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                WidgetbookUseCase(
-                  name: 'Victory Screen',
-                  builder: (context) => Container(
-                    color: Colors.black,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          border: Border.all(color: Colors.green, width: 3),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'YOU WIN!',
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              'Final Score: 1500',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                WidgetbookUseCase(
-                  name: 'Control Buttons',
-                  builder: (context) => Container(
-                    color: Colors.black,
+                    color: Colors.brown[100],
                     padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.all(20),
-                          ),
-                          child: const Icon(Icons.arrow_back, size: 30),
-                        ),
-                        const SizedBox(width: 20),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.all(20),
-                            shape: const CircleBorder(),
-                          ),
-                          child: const Icon(Icons.rocket_launch, size: 30),
-                        ),
-                        const SizedBox(width: 20),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.all(20),
-                          ),
-                          child: const Icon(Icons.arrow_forward, size: 30),
-                        ),
-                      ],
+                    child: Center(
+                      child: DiceRoller(
+                        onRoll: () {},
+                        canRoll: true,
+                      ),
                     ),
                   ),
                 ),
