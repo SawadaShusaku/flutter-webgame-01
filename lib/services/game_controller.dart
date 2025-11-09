@@ -18,6 +18,7 @@ import 'package:test_web_app/services/cpu_service.dart';
 import 'package:test_web_app/services/resource_discard_service.dart';
 import 'package:test_web_app/services/robber_service.dart';
 import 'package:test_web_app/services/victory_point_service.dart';
+import 'package:test_web_app/services/development_card_service.dart';
 
 /// ゲーム全体を管理するコントローラー
 /// UIから呼び出される主要なエントリポイント
@@ -33,6 +34,7 @@ class GameController extends ChangeNotifier {
   final ResourceDiscardService _discardService = ResourceDiscardService();
   final RobberService _robberService = RobberService();
   final VictoryPointService _victoryPointService = VictoryPointService();
+  final DevelopmentCardService _developmentCardService = DevelopmentCardService();
   final Random _random = Random();
 
   GameState? get state => _state;
@@ -563,5 +565,162 @@ class GameController extends ChangeNotifier {
       _state!.phase = GamePhase.gameOver;
       notifyListeners();
     }
+  }
+
+  // ===== 発展カードシステム =====
+
+  /// 発展カードを購入できるかチェック
+  ///
+  /// @return 購入可能ならtrue
+  bool canPurchaseDevelopmentCard() {
+    if (_state == null || _state!.phase != GamePhase.normalPlay) return false;
+    return _developmentCardService.canPurchaseDevelopmentCard(
+      _state!.currentPlayer,
+      _state!,
+    );
+  }
+
+  /// 発展カードを購入
+  ///
+  /// 建設と同じパターン：資源チェック → 消費 → カード獲得
+  ///
+  /// @return 購入成功したらtrue
+  Future<bool> purchaseDevelopmentCard() async {
+    if (_state == null || _state!.phase != GamePhase.normalPlay) return false;
+
+    final success = _developmentCardService.purchaseDevelopmentCard(
+      _state!.currentPlayer,
+      _state!,
+    );
+
+    if (success) {
+      notifyListeners();
+    }
+
+    return success;
+  }
+
+  /// 使用可能な発展カードのリストを取得
+  ///
+  /// @return 使用可能なカードのリスト
+  List<DevelopmentCard> getPlayableCards() {
+    if (_state == null) return [];
+    return _developmentCardService.getPlayableCards(
+      _state!.currentPlayer,
+      _state!,
+    );
+  }
+
+  /// 騎士カードを使用
+  ///
+  /// @param card 使用するカード
+  /// @param hexId 盗賊の移動先タイルID
+  /// @param targetPlayerId 資源を奪う対象プレイヤーID（nullの場合は奪わない）
+  /// @return 使用結果
+  Future<DevelopmentCardResult> playKnightCard(
+    DevelopmentCard card,
+    String hexId,
+    String? targetPlayerId,
+  ) async {
+    if (_state == null || _state!.phase != GamePhase.normalPlay) {
+      return const DevelopmentCardResult.failure('通常プレイフェーズではありません');
+    }
+
+    final result = _developmentCardService.playKnightCard(
+      _state!,
+      _state!.currentPlayer.id,
+      card,
+      hexId,
+      targetPlayerId,
+    );
+
+    if (result.success) {
+      updateVictoryPoints();
+      notifyListeners();
+    }
+
+    return result;
+  }
+
+  /// 街道建設カードを使用
+  ///
+  /// @param card 使用するカード
+  /// @return 使用結果
+  Future<DevelopmentCardResult> playRoadBuildingCard(
+    DevelopmentCard card,
+  ) async {
+    if (_state == null || _state!.phase != GamePhase.normalPlay) {
+      return const DevelopmentCardResult.failure('通常プレイフェーズではありません');
+    }
+
+    final result = _developmentCardService.playRoadBuildingCard(
+      _state!,
+      _state!.currentPlayer.id,
+      card,
+    );
+
+    if (result.success) {
+      // TODO: 道路建設モードに移行
+      notifyListeners();
+    }
+
+    return result;
+  }
+
+  /// 資源発見カードを使用
+  ///
+  /// @param card 使用するカード
+  /// @param resource1 獲得する資源1
+  /// @param resource2 獲得する資源2
+  /// @return 使用結果
+  Future<DevelopmentCardResult> playYearOfPlentyCard(
+    DevelopmentCard card,
+    ResourceType resource1,
+    ResourceType resource2,
+  ) async {
+    if (_state == null || _state!.phase != GamePhase.normalPlay) {
+      return const DevelopmentCardResult.failure('通常プレイフェーズではありません');
+    }
+
+    final result = _developmentCardService.playYearOfPlentyCard(
+      _state!,
+      _state!.currentPlayer.id,
+      card,
+      resource1,
+      resource2,
+    );
+
+    if (result.success) {
+      notifyListeners();
+    }
+
+    return result;
+  }
+
+  /// 資源独占カードを使用
+  ///
+  /// @param card 使用するカード
+  /// @param resourceType 奪う資源の種類
+  /// @return 使用結果
+  Future<DevelopmentCardResult> playMonopolyCard(
+    DevelopmentCard card,
+    ResourceType resourceType,
+  ) async {
+    if (_state == null || _state!.phase != GamePhase.normalPlay) {
+      return const DevelopmentCardResult.failure('通常プレイフェーズではありません');
+    }
+
+    final result = _developmentCardService.playMonopolyCard(
+      _state!,
+      _state!.currentPlayer.id,
+      card,
+      resourceType,
+    );
+
+    if (result.success) {
+      notifyListeners();
+    }
+
+    return result;
   }
 }

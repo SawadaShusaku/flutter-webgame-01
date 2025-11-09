@@ -31,29 +31,76 @@ class DevelopmentCardResult {
 /// 発展カード管理サービス
 ///
 /// Phase 5-6: 発展カードの購入と使用を管理
-/// - 騎士カード: 盗賊を移動して資源を奪う
-/// - 街道建設: 道路2本を無料で建設
-/// - 資源発見: 好きな資源2枚を獲得
-/// - 資源独占: 指定資源を全プレイヤーから奪う
-/// - 勝利点カード: 即座に公開され1勝利点
+/// - 購入: 建設と同じパターン（資源チェック → 消費 → 獲得）
+/// - 使用: 独自の機能
+///   - 騎士カード: 盗賊を移動して資源を奪う
+///   - 街道建設: 道路2本を無料で建設
+///   - 資源発見: 好きな資源2枚を獲得
+///   - 資源独占: 指定資源を全プレイヤーから奪う
+///   - 勝利点カード: 即座に公開され1勝利点
 class DevelopmentCardService {
   final ResourceManager _resourceManager;
-
-  /// 今ターンに購入したカードを追跡（同ターン使用制限のため）
-  final Set<DevelopmentCard> _cardsPurchasedThisTurn = {};
 
   DevelopmentCardService({
     ResourceManager? resourceManager,
   }) : _resourceManager = resourceManager ?? ResourceManager();
 
-  /// ターン開始時に呼び出す（購入制限リセット）
-  void startTurn() {
-    _cardsPurchasedThisTurn.clear();
+  // ===== 購入機能（建設システムと同じパターン） =====
+
+  /// 発展カード購入に必要な資源
+  static const Map<ResourceType, int> purchaseCost = {
+    ResourceType.wool: 1,
+    ResourceType.grain: 1,
+    ResourceType.ore: 1,
+  };
+
+  /// 発展カードを購入できるかチェック
+  ///
+  /// @param player プレイヤー
+  /// @param state ゲーム状態（デッキの残数確認用）
+  /// @return 購入可能ならtrue
+  bool canPurchaseDevelopmentCard(Player player, GameState state) {
+    // デッキが空でないか
+    if (state.developmentCardDeck.isEmpty) return false;
+
+    // 必要な資源を持っているか
+    return player.hasResources(purchaseCost);
   }
 
-  /// 発展カード購入時に呼び出す
-  void notifyCardPurchased(DevelopmentCard card) {
-    _cardsPurchasedThisTurn.add(card);
+  /// 発展カードを購入
+  ///
+  /// 建設と同じパターン：資源チェック → 資源消費 → カード獲得
+  ///
+  /// @param player プレイヤー
+  /// @param state ゲーム状態
+  /// @return 購入成功したらtrue
+  bool purchaseDevelopmentCard(Player player, GameState state) {
+    // 購入可能かチェック
+    if (!canPurchaseDevelopmentCard(player, state)) return false;
+
+    // 資源を消費（建設と同じパターン）
+    for (var entry in purchaseCost.entries) {
+      player.removeResource(entry.key, entry.value);
+    }
+
+    // カードを山札から引く
+    final card = state.developmentCardDeck.removeAt(0);
+
+    // 購入したターンを記録（このターンは使用不可）
+    card.purchasedOnTurn = state.turnNumber;
+
+    // 手札に追加
+    player.developmentCards.add(card);
+
+    // イベントログに記録
+    state.logEvent(GameEvent(
+      timestamp: DateTime.now(),
+      playerId: player.id,
+      type: GameEventType.cardPurchased,
+      data: {'cardType': card.type.name, 'turnNumber': state.turnNumber},
+    ));
+
+    return true;
   }
 
   // ========== 騎士カード ==========
@@ -358,8 +405,9 @@ class DevelopmentCardService {
       return const DevelopmentCardResult.failure('このカードは既に使用されています');
     }
 
-    // 同ターンに購入したカードは使えない
-    if (_cardsPurchasedThisTurn.contains(card)) {
+    // 同ターンに購入したカードは使えない（turnNumberベース）
+    if (card.purchasedOnTurn != null &&
+        card.purchasedOnTurn == gameState.turnNumber) {
       return const DevelopmentCardResult.failure(
           '購入したターンにはカードを使用できません');
     }
@@ -421,13 +469,24 @@ class DevelopmentCardService {
   /// プレイヤーが使用可能なカードのリストを取得
   ///
   /// [player] プレイヤー
+  /// [gameState] ゲーム状態（ターン番号確認用）
   ///
   /// 戻り値: 使用可能なカードのリスト
-  List<DevelopmentCard> getPlayableCards(Player player) {
+  List<DevelopmentCard> getPlayableCards(Player player, GameState gameState) {
     return player.developmentCards.where((card) {
-      return !card.played &&
-          !_cardsPurchasedThisTurn.contains(card) &&
-          card.type != DevelopmentCardType.victoryPoint;
+      // 未使用
+      if (card.played) return false;
+
+      // 勝利点カードは手動で使用不可
+      if (card.type == DevelopmentCardType.victoryPoint) return false;
+
+      // 今ターンに購入したカードは使用不可
+      if (card.purchasedOnTurn != null &&
+          card.purchasedOnTurn == gameState.turnNumber) {
+        return false;
+      }
+
+      return true;
     }).toList();
   }
 

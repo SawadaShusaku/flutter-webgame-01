@@ -425,6 +425,33 @@ class _NormalPlayScreenState extends State<NormalPlayScreen> {
 
           const SizedBox(height: 8),
 
+          // 発展カード購入ボタン
+          ElevatedButton.icon(
+            onPressed: controller.canPurchaseDevelopmentCard()
+                ? () async {
+                    final success = await controller.purchaseDevelopmentCard();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(success
+                              ? '発展カードを購入しました'
+                              : '発展カードを購入できませんでした'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  }
+                : null,
+            icon: const Icon(Icons.card_giftcard),
+            label: const Text('発展カード'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple[700],
+              foregroundColor: Colors.white,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
           // 交渉ボタン
           ElevatedButton.icon(
             onPressed: () {

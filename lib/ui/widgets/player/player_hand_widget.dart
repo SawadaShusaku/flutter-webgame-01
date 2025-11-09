@@ -221,3 +221,146 @@ class TotalResourcesWidget extends StatelessWidget {
     );
   }
 }
+
+/// 発展カード表示ウィジェット
+class DevelopmentCardsWidget extends StatelessWidget {
+  final Player player;
+  final bool showDetails; // 詳細（カード内訳）を表示するか
+
+  const DevelopmentCardsWidget({
+    super.key,
+    required this.player,
+    this.showDetails = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cards = player.developmentCards;
+    final unplayedCards = cards.where((c) => !c.played).toList();
+
+    if (!showDetails) {
+      // シンプル表示：カード総数のみ
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        decoration: BoxDecoration(
+          color: Colors.purple.shade100,
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(
+            color: Colors.purple.shade300,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.card_giftcard,
+              size: 18,
+              color: Colors.purple,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '発展カード: ${unplayedCards.length}枚',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.purple,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 詳細表示：カード種類ごとの枚数
+    final cardCounts = <DevelopmentCardType, int>{};
+    for (var card in unplayedCards) {
+      cardCounts[card.type] = (cardCounts[card.type] ?? 0) + 1;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '発展カード',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.purple,
+          ),
+        ),
+        const SizedBox(height: 4),
+        if (cardCounts.isEmpty)
+          const Text(
+            'なし',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          )
+        else
+          ...cardCounts.entries.map((entry) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4.0),
+              child: _buildCardChip(entry.key, entry.value),
+            );
+          }),
+      ],
+    );
+  }
+
+  Widget _buildCardChip(DevelopmentCardType type, int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      decoration: BoxDecoration(
+        color: Colors.purple.shade50,
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(
+          color: Colors.purple.shade200,
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_getCardIcon(type), size: 16, color: Colors.purple),
+          const SizedBox(width: 4),
+          Text(
+            '${_getCardName(type)} ×$count',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.purple,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getCardIcon(DevelopmentCardType type) {
+    switch (type) {
+      case DevelopmentCardType.knight:
+        return Icons.shield;
+      case DevelopmentCardType.victoryPoint:
+        return Icons.emoji_events;
+      case DevelopmentCardType.roadBuilding:
+        return Icons.route;
+      case DevelopmentCardType.yearOfPlenty:
+        return Icons.inventory;
+      case DevelopmentCardType.monopoly:
+        return Icons.account_balance_wallet;
+    }
+  }
+
+  String _getCardName(DevelopmentCardType type) {
+    switch (type) {
+      case DevelopmentCardType.knight:
+        return '騎士';
+      case DevelopmentCardType.victoryPoint:
+        return '勝利点';
+      case DevelopmentCardType.roadBuilding:
+        return '街道建設';
+      case DevelopmentCardType.yearOfPlenty:
+        return '資源発見';
+      case DevelopmentCardType.monopoly:
+        return '資源独占';
+    }
+  }
+}
