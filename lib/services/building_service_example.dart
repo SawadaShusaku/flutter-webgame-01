@@ -1,8 +1,8 @@
 // BuildingServiceの使用例
 
-import 'building_service.dart';
-import 'game_service.dart';
-import '../models/enums.dart';
+import 'package:test_web_app/services/building_service.dart';
+import 'package:test_web_app/services/game_service.dart';
+import 'package:test_web_app/models/enums.dart';
 
 /// 初期配置フェーズの完全な流れの例
 void exampleInitialSetup() {
