@@ -6,6 +6,8 @@
 /// - Edges for roads
 /// - Complete board painter with zoom and pan support
 /// - Game board widget with BoardGenerator integration
+/// - Player info and resource management widgets
+/// - Build actions and victory points widgets
 ///
 /// Usage:
 /// ```dart
@@ -15,12 +17,21 @@ library catan_widgets;
 
 // Utils
 export 'utils/hex_math.dart';
+export 'utils/constants.dart';
 
-// Widgets
+// Board Widgets
 export 'ui/widgets/board/hex_tile_widget.dart';
 export 'ui/widgets/board/vertex_widget.dart';
 export 'ui/widgets/board/edge_widget.dart';
 export 'ui/widgets/board/game_board_widget.dart';
+
+// Player Widgets
+export 'ui/widgets/player/player_hand_widget.dart';
+export 'ui/widgets/player/player_info_widget.dart';
+
+// Action Widgets
+export 'ui/widgets/actions/build_actions_widget.dart';
+export 'ui/widgets/actions/victory_points_widget.dart';
 
 // Painters
 export 'ui/painters/board_painter.dart';

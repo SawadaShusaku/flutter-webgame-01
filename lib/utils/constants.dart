@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/enums.dart';
+
+// modelsパッケージからenums.dartをimport
+// TODO: pubspec.yamlで依存関係を追加後、正しいimportパスに変更
+import '../../../../models/lib/models/enums.dart';
 
 /// ゲーム定数
 class GameConstants {
@@ -91,6 +94,11 @@ class GameColors {
     PlayerColor.yellow: Color(0xFFFDD835),
   };
 
+  /// プレイヤーカラーを取得
+  static Color getPlayerColor(PlayerColor color) {
+    return playerColors[color] ?? Colors.grey;
+  }
+
   // 地形カラー
   static const Map<TerrainType, Color> terrainColors = {
     TerrainType.forest: Color(0xFF2E7D32),     // 濃い緑
@@ -109,6 +117,11 @@ class GameColors {
     ResourceType.grain: Color(0xFFFDD835),
     ResourceType.ore: Color(0xFF616161),
   };
+
+  /// 資源カラーを取得
+  static Color getResourceColor(ResourceType resource) {
+    return resourceColors[resource] ?? Colors.grey;
+  }
 
   // 数字チップの出現確率に応じた色
   static Color getNumberColor(int number) {
@@ -135,6 +148,11 @@ class ResourceIcons {
     ResourceType.grain: '🌾',
     ResourceType.ore: '⛰️',
   };
+
+  /// 資源アイコンを取得
+  static String getIcon(ResourceType resource) {
+    return icons[resource] ?? '❓';
+  }
 
   static const Map<TerrainType, String> terrainIcons = {
     TerrainType.forest: '🌲',
