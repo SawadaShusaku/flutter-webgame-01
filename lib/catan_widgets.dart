@@ -10,6 +10,10 @@
 /// - Build actions and victory points widgets
 /// - Development card UI and interactions
 /// - Achievements display (longest road, largest army)
+/// - Robber placement and stealing mechanics
+/// - Resource discard dialogs
+/// - Trade UI (player-to-player and bank trades)
+/// - Trade history and offer management
 ///
 /// Usage:
 /// ```dart
@@ -42,6 +46,18 @@ export 'ui/widgets/cards/card_hand_widget.dart';
 
 // Game Info Widgets
 export 'ui/widgets/game_info/achievements_widget.dart';
+
+// Robber Widgets
+export 'ui/widgets/robber/robber_placement_dialog.dart';
+export 'ui/widgets/robber/steal_resource_dialog.dart';
+export 'ui/widgets/robber/robber_indicator_widget.dart';
+export 'ui/widgets/robber/discard_resources_dialog.dart';
+
+// Trade Widgets
+export 'ui/widgets/trade/trade_offer_widget.dart';
+export 'ui/widgets/trade/player_trade_dialog.dart';
+export 'ui/widgets/trade/bank_trade_dialog.dart';
+export 'ui/widgets/trade/trade_history_widget.dart';
 
 // Painters
 export 'ui/painters/board_painter.dart';
