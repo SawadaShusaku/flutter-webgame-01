@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:test_web_app/controllers/game_controller.dart';
+import 'package:test_web_app/services/game_controller.dart';
 import 'package:test_web_app/models/game_state.dart';
 import 'package:test_web_app/ui/widgets/trade/resource_selector.dart';
 import 'package:test_web_app/ui/widgets/trade/trade_offer_widget.dart';

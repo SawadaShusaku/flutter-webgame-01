@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-
-// modelsパッケージからenums.dartをimport
-// TODO: pubspec.yamlで依存関係を追加後、正しいimportパスに変更
-import '../../../../models/lib/models/enums.dart';
+import 'package:test_web_app/models/enums.dart';
 
 /// ゲーム定数
 class GameConstants {

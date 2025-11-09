@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:test_web_app/controllers/game_controller.dart';
+import 'package:test_web_app/services/game_controller.dart';
 import 'package:test_web_app/models/game_state.dart';
-import 'package:test_web_app/ui/widgets/game_board_widget.dart';
-import 'package:test_web_app/ui/widgets/game_log_widget.dart';
+import 'package:test_web_app/ui/widgets/board/game_board_widget.dart';
+import 'package:test_web_app/ui/widgets/log/game_log_widget.dart';
 
 class NormalPlayScreen extends StatelessWidget {
   const NormalPlayScreen({super.key});
