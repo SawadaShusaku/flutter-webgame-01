@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 // modelsパッケージからimport
-import '../../../../../models/lib/models/player.dart';
-import '../../../../../models/lib/models/development_card.dart';
-import '../../../../../models/lib/models/enums.dart';
+import '../../../../models/lib/models/player.dart';
+import '../../../../models/lib/models/development_card.dart';
+import '../../../../models/lib/models/enums.dart';
 
 // 発展カードウィジェットをimport
 import 'development_card_widget.dart';
