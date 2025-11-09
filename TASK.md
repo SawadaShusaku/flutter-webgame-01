@@ -1,43 +1,32 @@
-# UI Screens担当タスク
+# Phase 3: 通常プレイ画面の強化
 
-## 役割
-画面UIの実装
+## タスク概要
+通常プレイフェーズの画面を完全に機能させてください。
 
-## フェーズ1の担当タスク
+## 実装内容
 
-### 1. TitleScreen (ui/screens/title_screen.dart)
-- タイトルロゴ表示
-- 点滅テキスト「TOUCH TO START」
-- タップでメインメニューへ遷移
-- BGM再生（将来実装）
+### 1. `lib/ui/screens/normal_play_screen.dart` を作成
+- 初期配置後の通常プレイ専用画面
+- レイアウト:
+  - 上部: 現在のプレイヤー、ターン数、勝利点
+  - 中央: ゲームボード（`GameBoardWidget`使用）
+  - 右側: アクションパネル
+    - サイコロボタン（まだ振ってない場合のみ）
+    - 建設ボタン（集落、都市、道路）
+    - ターン終了ボタン
+  - 下部: プレイヤーハンド（手札表示）
 
-### 2. MainMenuScreen (ui/screens/main_menu_screen.dart)
-- メニューボタン配置
-  - 新しいゲーム（カタン）
-  - Space Invaders（おまけゲーム）
-  - ゲームを続ける
-  - ルール説明
-  - 設定
-  - 終了
-- 画面遷移ロジック
+### 2. 既存の `game_screen.dart` を更新
+- `SetupScreen` から `NormalPlayScreen` への遷移
+- フェーズに応じた画面切り替え
 
-### 3. GameScreen (ui/screens/game_screen.dart)
-- ゲーム画面の基本構造
-- ボードエリア（中央）
-- ログエリア（半透明、右側）
-- 手札エリア（下部）
-- アクションボタンエリア（最下部）
-- レスポンシブレイアウト対応
+### 3. ゲームログ表示
+- 簡単なログウィジェット作成
+- 主要アクション（建設、サイコロ、資源獲得）をログ表示
 
-## 依存関係
-- ui/widgets/ のウィジェットを使用
-- services/ のロジックを呼び出し
+## 重要ポイント
+- `Provider` で `GameController` を監視
+- ボタンの有効/無効は `GameController` の状態で制御
+- レスポンシブレイアウト（wide/narrow対応）
 
-## 成果物
-- lib/ui/screens/title_screen.dart
-- lib/ui/screens/main_menu_screen.dart
-- lib/ui/screens/game_screen.dart
-
-## 完了条件
-- タイトル→メインメニュー→ゲーム画面の遷移が動作
-- 各画面が適切にレイアウトされる
+完成したら commit してください。
