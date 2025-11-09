@@ -1,13 +1,13 @@
 // modelsからimport
-import '../models/game_state.dart';
-import '../models/player.dart';
-import '../models/vertex.dart';
-import '../models/edge.dart';
-import '../models/enums.dart';
+import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/vertex.dart';
+import 'package:test_web_app/models/edge.dart';
+import 'package:test_web_app/models/enums.dart';
 
 // servicesからimport
-import 'building_costs.dart';
-import 'resource_manager.dart';
+import 'package:test_web_app/services/building_costs.dart';
+import 'package:test_web_app/services/resource_manager.dart';
 
 /// 建設ルールの検証結果
 class ValidationResult {

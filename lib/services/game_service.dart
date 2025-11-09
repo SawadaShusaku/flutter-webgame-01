@@ -1,21 +1,21 @@
 import 'dart:math';
 
 // modelsからimport
-import '../models/game_state.dart';
-import '../models/player.dart';
-import '../models/hex_tile.dart';
-import '../models/vertex.dart';
-import '../models/edge.dart';
-import '../models/building.dart';
-import '../models/road.dart';
-import '../models/development_card.dart';
-import '../models/enums.dart';
+import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/hex_tile.dart';
+import 'package:test_web_app/models/vertex.dart';
+import 'package:test_web_app/models/edge.dart';
+import 'package:test_web_app/models/building.dart';
+import 'package:test_web_app/models/road.dart';
+import 'package:test_web_app/models/development_card.dart';
+import 'package:test_web_app/models/enums.dart';
 
 // servicesからimport
-import 'board_generator.dart';
-import 'resource_service.dart';
-import 'development_card_service.dart';
-import 'longest_road_service.dart';
+import 'package:test_web_app/services/board_generator.dart';
+import 'package:test_web_app/services/resource_service.dart';
+import 'package:test_web_app/services/development_card_service.dart';
+import 'package:test_web_app/services/longest_road_service.dart';
 
 /// ゲーム全体管理サービス
 /// - ゲーム全体の管理

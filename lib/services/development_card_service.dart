@@ -1,12 +1,12 @@
 // modelsからimport
-import '../models/game_state.dart';
-import '../models/player.dart';
-import '../models/development_card.dart';
-import '../models/enums.dart';
-import '../models/hex_tile.dart';
+import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/development_card.dart';
+import 'package:test_web_app/models/enums.dart';
+import 'package:test_web_app/models/hex_tile.dart';
 
 // servicesからimport
-import 'resource_manager.dart';
+import 'package:test_web_app/services/resource_manager.dart';
 
 /// 発展カード使用結果
 class DevelopmentCardResult {

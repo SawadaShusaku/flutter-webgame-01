@@ -1,6 +1,6 @@
 // modelsからimport
-import '../models/player.dart';
-import '../models/enums.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/enums.dart';
 
 /// 資源管理サービス
 ///

@@ -2,10 +2,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 // modelsからimport
-import '../models/hex_tile.dart';
-import '../models/vertex.dart';
-import '../models/edge.dart';
-import '../models/enums.dart';
+import 'package:test_web_app/models/hex_tile.dart';
+import 'package:test_web_app/models/vertex.dart';
+import 'package:test_web_app/models/edge.dart';
+import 'package:test_web_app/models/enums.dart';
 
 /// ボード生成サービス
 /// 19枚の六角形タイルを配置し、数字チップをランダムに配置、頂点と辺を生成

@@ -1,42 +1,50 @@
-# 緊急修正: services/ 内の全importパスを修正
+# 緊急修正: services/内の全importを絶対パスに変更
 
 ## タスク
-lib/services/ 配下の全てのDartファイルのimportパスを修正してください。
+lib/services/ 配下の全Dartファイルのimportを絶対パスに変更してください。
 
-## 修正ルール
+## 変更ルール
 
-### 1. modelsのimport
+### 相対パスから絶対パスへ
 ```dart
-❌ import '../../../models/lib/models/game_state.dart';
-✅ import '../models/game_state.dart';
+❌ import '../models/game_state.dart';
+❌ import '../../models/game_state.dart';
+❌ import '../../../models/game_state.dart';
+✅ import 'package:test_web_app/models/game_state.dart';
 
-❌ import '../../models/xxx.dart';
-✅ import '../models/xxx.dart';
+❌ import 'game_service.dart';
+✅ import 'package:test_web_app/services/game_service.dart';
+
+❌ import '../utils/constants.dart';
+✅ import 'package:test_web_app/utils/constants.dart';
 ```
 
-### 2. servicesのimport（同じディレクトリ内）
+## 全てのパターン
 ```dart
-✅ import 'game_service.dart';
-✅ import 'resource_service.dart';
-```
+// models
+✅ import 'package:test_web_app/models/xxx.dart';
 
-### 3. utilsのimport
-```dart
-✅ import '../utils/constants.dart';
+// services（同じディレクトリ内でも絶対パス）
+✅ import 'package:test_web_app/services/xxx.dart';
+
+// utils
+✅ import 'package:test_web_app/utils/xxx.dart';
+
+// ui
+✅ import 'package:test_web_app/ui/xxx.dart';
 ```
 
 ## 対象ファイル
-lib/services/ 内の全ての.dartファイル
+lib/services/ 内の全.dartファイル
 
 ## 実行方法
-1. 各.dartファイルを開く
-2. import文を確認
-3. 上記ルールに従って修正
-4. **全てのファイルを修正したらコミット**
+1. lib/services/内の各.dartファイルを開く
+2. 全てのimport文を絶対パスに変更
+3. **全てのファイルを修正したらコミット**
 
 ```bash
 git add -A
-git commit -m "fix(services): 全importパスを修正"
+git commit -m "refactor(services): 全importを絶対パスに変更"
 ```
 
 完了したら報告してください。
