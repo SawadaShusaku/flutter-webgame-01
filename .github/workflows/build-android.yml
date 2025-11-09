@@ -46,28 +46,11 @@ jobs:
     - name: ゲームAPKをアップロード
       uses: actions/upload-artifact@v4
       with:
-        name: space-invaders-game-apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
-        retention-days: 30
-
-    - name: ビルドをクリーン
-      run: flutter clean
-
-    - name: 依存関係を再インストール
-      run: flutter pub get
-
-    - name: Widgetbook APKをビルド
-      run: flutter build apk --debug -t lib/widgetbook.dart
-
-    - name: Widgetbook APKをアップロード
-      uses: actions/upload-artifact@v4
-      with:
-        name: space-invaders-widgetbook-apk
+        name: catan-game-apk
         path: build/app/outputs/flutter-apk/app-debug.apk
         retention-days: 30
 
     - name: ビルド情報を表示
       run: |
-        echo "✅ 両方のAPKのビルドが完了しました"
-        echo "  - ゲームAPK: space-invaders-game-apk"
-        echo "  - Widgetbook APK: space-invaders-widgetbook-apk"
+        echo "✅ カタンゲームAPKのビルドが完了しました"
+        echo "  - ゲームAPK: catan-game-apk"
