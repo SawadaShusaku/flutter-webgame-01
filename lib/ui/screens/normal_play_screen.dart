@@ -7,6 +7,7 @@ import 'package:test_web_app/ui/widgets/board/game_board_widget.dart';
 import 'package:test_web_app/ui/widgets/log/game_log_widget.dart';
 import 'package:test_web_app/ui/widgets/actions/dice_roller.dart';
 import 'package:test_web_app/ui/widgets/bank_trade_dialog.dart';
+import 'package:test_web_app/ui/screens/trade_screen.dart';
 import 'package:test_web_app/utils/constants.dart';
 
 class NormalPlayScreen extends StatefulWidget {
@@ -418,6 +419,26 @@ class _NormalPlayScreenState extends State<NormalPlayScreen> {
             label: const Text('銀行交易'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue[700],
+              foregroundColor: Colors.white,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // 交渉ボタン
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TradeScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.handshake),
+            label: const Text('交渉'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange[700],
               foregroundColor: Colors.white,
             ),
           ),
