@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:test_web_app/ui/screens/game_screen.dart';
 import 'package:test_web_app/ui/screens/space_invaders_screen.dart';
 import 'package:test_web_app/ui/screens/setup_screen.dart';
+import 'package:test_web_app/services/game_controller.dart';
+import 'package:test_web_app/models/player_config.dart';
+import 'package:test_web_app/models/enums.dart';
 
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({super.key});
@@ -44,12 +48,44 @@ class MainMenuScreen extends StatelessWidget {
                   _MenuButton(
                     text: '新しいゲーム',
                     icon: Icons.add_circle_outline,
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const SetupScreen(),
-                        ),
-                      );
+                    onPressed: () async {
+                      // ゲームを開始
+                      final controller = context.read<GameController>();
+
+                      // デフォルト設定: プレイヤー1=人間、2-4=CPU
+                      await controller.startNewGame(GameConfig(
+                        playerCount: 4,
+                        players: [
+                          PlayerConfig(
+                            name: 'プレイヤー1',
+                            color: PlayerColor.red,
+                            playerType: PlayerType.human,
+                          ),
+                          PlayerConfig(
+                            name: 'CPU 1',
+                            color: PlayerColor.blue,
+                            playerType: PlayerType.cpu,
+                          ),
+                          PlayerConfig(
+                            name: 'CPU 2',
+                            color: PlayerColor.green,
+                            playerType: PlayerType.cpu,
+                          ),
+                          PlayerConfig(
+                            name: 'CPU 3',
+                            color: PlayerColor.yellow,
+                            playerType: PlayerType.cpu,
+                          ),
+                        ],
+                      ));
+
+                      if (context.mounted) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const GameScreen(),
+                          ),
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 16),

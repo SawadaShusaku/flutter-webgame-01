@@ -1,15 +1,17 @@
-import 'enums.dart';
+import 'package:test_web_app/models/enums.dart';
 
 /// ゲーム開始前のプレイヤー設定
 class PlayerConfig {
   final String name;
   final PlayerColor color;
+  final PlayerType playerType;
   final bool isCPU;
   final CPUDifficulty? difficulty;
 
   PlayerConfig({
     required this.name,
     required this.color,
+    this.playerType = PlayerType.human,
     this.isCPU = false,
     this.difficulty,
   }) : assert(!isCPU || difficulty != null, 'CPUプレイヤーには難易度が必要です');

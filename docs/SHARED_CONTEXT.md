@@ -1,24 +1,30 @@
-# Phase B + C 並列開発 - 共有コンテキスト
+# 設計リファクタリング - 共有コンテキスト
 
 ## 最終更新
-2025-11-09 (開始前)
+2025-11-09 (設計リファクタリング開始)
 
 ---
 
 ## 🎯 今回の並列開発の目標
 
-### Pane 1: Phase B（サイコロ機能）
-**担当**: サイコロ、資源生産、7の処理
+### Pane D: PlayerType追加とモデル拡張（30分）
+**担当**: PlayerType enum, Player/PlayerConfigクラス拡張
 
-### Pane 2: Phase C（建設インタラクション）
-**担当**: タップ検出、建設モード、ハイライト表示
+### Pane E: 簡易CPU実装（1時間）
+**担当**: CPUService作成、ランダム行動ロジック、GameController統合
+
+### Pane F: 画面統合（1.5時間）
+**担当**: GameScreen統合、SetupPhaseWidget分離、フェーズ切り替え
+
+### メイン: GitHub Actions修正とテスト
+**担当**: リリースモード変更、統合テスト
 
 ---
 
 ## 📋 共通インターフェース（変更禁止）
 
 ### GameController（既存）
-以下のメソッドは**既に実装済み**。変更禁止。
+以下のメソッドは**既に実装済み**。Pane D/E/Fは既存メソッドのシグネチャを変更しない。
 
 ```dart
 // サイコロ関連
@@ -37,6 +43,16 @@ bool canBuildRoad();
 // ゲーム状態
 GameState? get state;
 Player? get currentPlayer;
+GamePhase? get currentPhase;
+
+// ターン管理
+Future<void> endTurn();
+
+// 建設モード（Phase Cで追加済み）
+BuildMode get buildMode;
+void setBuildMode(BuildMode mode);
+Future<void> onVertexTapped(String vertexId);
+Future<void> onEdgeTapped(String edgeId);
 ```
 
 ### GameState（既存）
@@ -44,15 +60,47 @@ Player? get currentPlayer;
 
 ```dart
 class GameState {
+  final String gameId;
+  final List<Player> players;
   final List<HexTile> board;
   final List<Vertex> vertices;
   final List<Edge> edges;
-  final List<Player> players;
-  DiceRoll? lastDiceRoll;
-  Robber? robber;
+  final List<Harbor> harbors;
+  final List<DevelopmentCard> developmentCardDeck;
+  final Robber robber;
+
+  // 可変状態
   GamePhase phase;
+  int currentPlayerIndex;
+  DiceRoll? lastDiceRoll;
+  List<GameEvent> eventLog;
   // ...
 }
+```
+
+### Player（既存 - Pane Dが拡張）
+**既存フィールド（変更禁止）**:
+```dart
+class Player {
+  final String id;
+  final String name;
+  final PlayerColor color;
+  Map<ResourceType, int> resources;
+  List<DevelopmentCard> developmentCards;
+  int victoryPoints;
+  int settlementsBuilt;
+  int citiesBuilt;
+  int roadsBuilt;
+  bool hasLongestRoad;
+  bool hasLargestArmy;
+  int knightsPlayed;
+  // ...
+}
+```
+
+**Pane Dが追加するフィールド**:
+```dart
+  final PlayerType playerType;  // 新規追加
 ```
 
 ### Vertex（既存）
@@ -82,35 +130,56 @@ class Edge {
 ## 🚫 禁止事項
 
 ### 全ペイン共通
-1. **モデルの構造変更禁止**
-   - GameState, Player, Vertex, Edge, HexTile の public プロパティを変更しない
+1. **モデルの既存フィールド変更禁止**
+   - Player, GameState, Vertex, Edge の既存 public プロパティを変更しない
+   - 新規フィールド追加はOK（Pane DのPlayerType追加など）
 
 2. **GameControllerの既存メソッドのシグネチャ変更禁止**
    - 戻り値の型を変更しない
    - 引数を追加/削除しない
+   - 新規メソッド追加はOK
 
 3. **相対importの使用禁止**
    - 全て `package:test_web_app/...` 形式を使用
 
-### Pane 1専用の禁止事項
-- Vertex, Edge, GameBoardWidget を直接編集しない
+4. **Phase B/Cの成果物を壊さない**
+   - DiceRoller, BuildMode, onVertexTapped, onEdgeTapped は既に実装済み
+   - これらを削除・変更しない
 
-### Pane 2専用の禁止事項
-- DiceRoller, ResourceService を直接編集しない
+### Pane D専用の禁止事項
+- GameController, CPUService, 画面系ファイルを編集しない
+- モデルファイル（Player, PlayerConfig, enums）のみ編集
+
+### Pane E専用の禁止事項
+- 画面ファイル（*_screen.dart, *_widget.dart）を直接編集しない
+- GameControllerには新規メソッド追加のみ（既存メソッド変更禁止）
+
+### Pane F専用の禁止事項
+- Player, PlayerConfig, enums.dart を編集しない
+- CPUService を編集しない（使用のみ）
+- GameControllerには新規メソッド追加のみ（既存メソッド変更禁止）
 
 ---
 
 ## ✅ 追加して良いもの
 
-### Pane 1（サイコロ機能）
-- GameController に新しいメソッドを追加（既存メソッドは変更禁止）
-- DiceRollerウィジェットの改修
-- 新しいサービスクラス（DiceAnimationService など）
+### Pane D（PlayerType追加）
+- `lib/models/enums.dart` に PlayerType enum追加
+- `lib/models/player.dart` に playerType フィールド追加
+- `lib/models/player_config.dart` に playerType フィールド追加
 
-### Pane 2（建設インタラクション）
-- GameController に新しいメソッドを追加（既存メソッドは変更禁止）
-- VertexWidget/EdgeWidget にタップ検出を追加
-- 新しいenum（BuildMode など）
+### Pane E（簡易CPU実装）
+- `lib/services/cpu_service.dart` 新規作成
+- `lib/services/game_controller.dart` に以下を追加：
+  - `final CPUService _cpuService = CPUService();`
+  - `endTurn()` メソッド内でCPU自動実行
+  - `rollDice()` メソッド内でCPU自動続行
+
+### Pane F（画面統合）
+- `lib/ui/screens/game_screen.dart` 新規作成（統合画面）
+- `lib/ui/widgets/phases/setup_phase_widget.dart` 新規作成
+- `lib/ui/widgets/phases/normal_play_phase_widget.dart` 新規作成
+- `lib/ui/screens/title_screen.dart` の遷移先変更
 
 ---
 
@@ -123,17 +192,27 @@ class Edge {
 #### 初期状態
 ```json
 {
-  "pane_b_dice": {
+  "pane_d_player_type": {
     "status": "pending",
-    "timestamp": "2025-11-09T10:00:00",
+    "timestamp": "2025-11-09T00:00:00Z",
     "progress": 0,
+    "message": "",
     "changes": [],
     "warnings": []
   },
-  "pane_c_building": {
+  "pane_e_cpu": {
     "status": "pending",
-    "timestamp": "2025-11-09T10:00:00",
+    "timestamp": "2025-11-09T00:00:00Z",
     "progress": 0,
+    "message": "",
+    "changes": [],
+    "warnings": []
+  },
+  "pane_f_screen": {
+    "status": "pending",
+    "timestamp": "2025-11-09T00:00:00Z",
+    "progress": 0,
+    "message": "",
     "changes": [],
     "warnings": []
   }
@@ -147,41 +226,47 @@ class Edge {
 - `completed`: 完了
 - `blocked`: 他ペインの完了待ち
 
-### 更新タイミング
+### ヘルパースクリプト
 
-#### 作業開始時
+#### `/tmp/update_pane_status.sh`
 ```bash
-# 最新の共有情報を確認
-cat /tmp/pane_status.json
-cat /root/test_web_app/docs/SHARED_CONTEXT.md
+/tmp/update_pane_status.sh <pane_name> <status> <progress> <message>
 
-# 自分のステータスを更新
-jq '.pane_b_dice.status = "in_progress" | .pane_b_dice.timestamp = now | .pane_b_dice.progress = 10' /tmp/pane_status.json > /tmp/pane_status.tmp && mv /tmp/pane_status.tmp /tmp/pane_status.json
+# 例
+/tmp/update_pane_status.sh pane_d_player_type in_progress 50 "PlayerType enum追加完了"
 ```
 
-#### 重要な変更を行った時
+#### `/tmp/add_pane_change.sh`
 ```bash
-# 変更を記録
-jq '.pane_b_dice.changes += ["GameControllerにanimateRollDice()追加"]' /tmp/pane_status.json > /tmp/pane_status.tmp && mv /tmp/pane_status.tmp /tmp/pane_status.json
+/tmp/add_pane_change.sh <pane_name> <change_description>
+
+# 例
+/tmp/add_pane_change.sh pane_d_player_type "Player.playerTypeフィールド追加"
 ```
 
-#### 警告事項がある時
+#### `/tmp/add_pane_warning.sh`
 ```bash
-# 警告を記録
-jq '.pane_b_dice.warnings += ["DiceRollerウィジェットのonRollコールバックを変更しました"]' /tmp/pane_status.json > /tmp/pane_status.tmp && mv /tmp/pane_status.tmp /tmp/pane_status.json
+/tmp/add_pane_warning.sh <pane_name> <warning_description>
+
+# 例
+/tmp/add_pane_warning.sh pane_e_cpu "GameController.endTurn()メソッドを変更しました"
 ```
 
-#### 作業完了時
+### 定期チェック（30分ごと）
 ```bash
-# 完了を記録
-jq '.pane_b_dice.status = "completed" | .pane_b_dice.progress = 100 | .pane_b_dice.timestamp = now' /tmp/pane_status.json > /tmp/pane_status.tmp && mv /tmp/pane_status.tmp /tmp/pane_status.json
+# 他ペインの状態確認
+cat /tmp/pane_status.json | jq '.'
+
+# 特定ペインの変更確認
+cat /tmp/pane_status.json | jq '.pane_d_player_type.changes'
+cat /tmp/pane_status.json | jq '.pane_e_cpu.warnings'
 ```
 
 ---
 
 ## 📝 変更履歴
 
-### 2025-11-09 10:00 - 開始前
+### 2025-11-09 00:00 - 開始前
 - 共有コンテキスト作成
 - ステータスファイル初期化
 
@@ -199,34 +284,49 @@ jq '.pane_b_dice.status = "completed" | .pane_b_dice.progress = 100 | .pane_b_di
 
 ## 🔍 検証チェックリスト
 
-各ペインは完了前に以下を確認：
-
-### Pane 1（サイコロ機能）
-- [ ] `cat /tmp/pane_status.json` でPane 2の状態を確認
-- [ ] GameControllerの既存メソッドを変更していないか
+### Pane D（PlayerType追加）
+- [ ] PlayerType enumを追加
+- [ ] Player.playerTypeフィールド追加
+- [ ] PlayerConfig.playerTypeフィールド追加
 - [ ] 相対importを使用していないか
 - [ ] `/tmp/pane_status.json`に変更を記録したか
+- [ ] ビルドエラー0件
 
-### Pane 2（建設インタラクション）
-- [ ] `cat /tmp/pane_status.json` でPane 1の状態を確認
-- [ ] GameControllerの既存メソッドを変更していないか
+### Pane E（簡易CPU実装）
+- [ ] CPUServiceクラス作成
+- [ ] GameController.endTurn()にCPU自動実行追加
+- [ ] GameController.rollDice()にCPU自動続行追加
+- [ ] Pane Dの完了を待ってから開始（PlayerType依存）
 - [ ] 相対importを使用していないか
 - [ ] `/tmp/pane_status.json`に変更を記録したか
+- [ ] ビルドエラー0件
+
+### Pane F（画面統合）
+- [ ] GameScreen作成
+- [ ] SetupPhaseWidget作成
+- [ ] NormalPlayPhaseWidget作成（既存のNormalPlayScreenを活用）
+- [ ] TitleScreenの遷移先変更
+- [ ] Pane D, Eの完了を待ってから開始
+- [ ] 相対importを使用していないか
+- [ ] `/tmp/pane_status.json`に変更を記録したか
+- [ ] ビルドエラー0件
 
 ---
 
 ## 🎯 成功基準
 
 ### 統合時に以下が全て動作すること
-1. サイコロを振ると資源が生産される
-2. タップで建設位置を選択できる
-3. ビルドエラーが0件
-4. 両方の機能が同時に動作する
+1. プレイヤー1は人間操作できる
+2. プレイヤー2-4はCPUが自動行動する
+3. 初期配置フェーズ→通常プレイフェーズが連続する
+4. サイコロ、建設機能が引き続き動作する
+5. ビルドエラーが0件
+6. リリースビルドが成功する
 
 ### 統合手順
-1. Pane 1のブランチをmainにマージ
-2. ビルド確認
-3. Pane 2のブランチをmainにマージ
+1. Pane Dの変更をコミット
+2. Pane Eの変更をコミット（Pane D完了後）
+3. Pane Fの変更をコミット（Pane D/E完了後）
 4. ビルド確認
 5. 統合テスト
 
@@ -242,12 +342,13 @@ jq '.pane_b_dice.status = "completed" | .pane_b_dice.progress = 100 | .pane_b_di
 ### 質問がある時
 1. SHARED_CONTEXT.mdを再確認
 2. `/tmp/pane_status.json`を確認
-3. それでも不明な場合はメインエージェントに質問
+3. 設計ドキュメント（`docs/design-refactoring-plan.md`）を確認
+4. それでも不明な場合はメインエージェントに質問
 
 ---
 
 ## 📚 参考ドキュメント
 
+- [設計リファクタリング計画](./design-refactoring-plan.md) - **必読**
 - [開発計画書](./catan-game-plan.md)
 - [並列開発の教訓](./lessons-learned-parallel-development.md)
-- [次フェーズ計画](./next-phase-plan.md)

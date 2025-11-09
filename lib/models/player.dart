@@ -1,11 +1,12 @@
-import 'enums.dart';
-import 'development_card.dart';
+import 'package:test_web_app/models/enums.dart';
+import 'package:test_web_app/models/development_card.dart';
 
 /// ゲーム中のプレイヤー情報
 class Player {
   final String id;
   final String name;
   final PlayerColor color;
+  final PlayerType playerType;
 
   /// 所持資源
   Map<ResourceType, int> resources;
@@ -30,6 +31,7 @@ class Player {
     required this.id,
     required this.name,
     required this.color,
+    this.playerType = PlayerType.human,
     Map<ResourceType, int>? resources,
     List<DevelopmentCard>? developmentCards,
     this.victoryPoints = 0,

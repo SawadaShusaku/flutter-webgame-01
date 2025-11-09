@@ -85,6 +85,12 @@ enum CPUDifficulty {
   hard,    // 難しい
 }
 
+/// プレイヤータイプ
+enum PlayerType {
+  human,   // 人間
+  cpu,     // CPU
+}
+
 /// 建設モード
 enum BuildMode {
   none,        // 建設モードなし

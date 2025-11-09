@@ -14,6 +14,7 @@ import 'package:test_web_app/services/turn_service.dart';
 import 'package:test_web_app/services/resource_service.dart';
 import 'package:test_web_app/services/game_service.dart';
 import 'package:test_web_app/services/trade_service.dart';
+import 'package:test_web_app/services/cpu_service.dart';
 
 /// ゲーム全体を管理するコントローラー
 /// UIから呼び出される主要なエントリポイント
@@ -25,6 +26,7 @@ class GameController extends ChangeNotifier {
   final ResourceService _resourceService = ResourceService();
   final GameService _gameService = GameService();
   final TradeService _tradeService = TradeService();
+  final CPUService _cpuService = CPUService();
   final Random _random = Random();
 
   GameState? get state => _state;
@@ -53,6 +55,7 @@ class GameController extends ChangeNotifier {
         id: 'player_$i',
         name: playerConfig.name,
         color: playerConfig.color,
+        playerType: playerConfig.playerType,
       ));
     }
 
@@ -128,6 +131,12 @@ class GameController extends ChangeNotifier {
     _turnService.nextTurn(_state!);
 
     notifyListeners();
+
+    // 次のプレイヤーがCPUなら自動実行
+    if (_state!.currentPlayer.playerType == PlayerType.cpu) {
+      await Future.delayed(const Duration(milliseconds: 300)); // UI更新待ち
+      await _executeCPUTurn();
+    }
   }
 
   /// 集落を建設
@@ -346,5 +355,49 @@ class GameController extends ChangeNotifier {
         notifyListeners();
       }
     }
+  }
+
+  /// CPUのターンを実行（内部メソッド）
+  Future<void> _executeCPUTurn() async {
+    if (_state == null || _state!.currentPlayer.playerType != PlayerType.cpu) {
+      return;
+    }
+
+    // 通常プレイフェーズならサイコロを振る
+    if (_state!.phase == GamePhase.normalPlay) {
+      await rollDice();
+      await Future.delayed(const Duration(milliseconds: 1000));
+    }
+
+    // CPU行動を決定
+    final action = await _cpuService.decideCPUAction(_state!, _state!.currentPlayer);
+
+    if (action == null) {
+      return;
+    }
+
+    // 行動を実行
+    switch (action.type) {
+      case CPUActionType.buildSettlement:
+        if (action.targetId != null) {
+          await buildSettlement(action.targetId!);
+        }
+        break;
+      case CPUActionType.buildRoad:
+        if (action.targetId != null) {
+          await buildRoad(action.targetId!);
+        }
+        break;
+      case CPUActionType.buildCity:
+        if (action.targetId != null) {
+          await buildCity(action.targetId!);
+        }
+        break;
+      case CPUActionType.endTurn:
+        await endTurn();
+        break;
+    }
+
+    notifyListeners();
   }
 }
