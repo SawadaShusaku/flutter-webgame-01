@@ -1,13 +1,13 @@
 import 'dart:math';
 
 // modelsからimport
-import '../../../models/lib/models/game_state.dart';
-import '../../../models/lib/models/player.dart';
-import '../../../models/lib/models/vertex.dart';
-import '../../../models/lib/models/edge.dart';
-import '../../../models/lib/models/building.dart';
-import '../../../models/lib/models/road.dart';
-import '../../../models/lib/models/enums.dart';
+import '../models/game_state.dart';
+import '../models/player.dart';
+import '../models/vertex.dart';
+import '../models/edge.dart';
+import '../models/building.dart';
+import '../models/road.dart';
+import '../models/enums.dart';
 
 // servicesからimport
 import 'resource_service.dart';

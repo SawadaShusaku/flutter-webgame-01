@@ -2,7 +2,7 @@
 
 import 'building_service.dart';
 import 'game_service.dart';
-import '../../../models/lib/models/enums.dart';
+import '../models/enums.dart';
 
 /// 初期配置フェーズの完全な流れの例
 void exampleInitialSetup() {

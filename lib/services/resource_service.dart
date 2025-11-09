@@ -1,9 +1,9 @@
 // modelsからimport
-import '../../../models/lib/models/player.dart';
-import '../../../models/lib/models/hex_tile.dart';
-import '../../../models/lib/models/vertex.dart';
-import '../../../models/lib/models/game_state.dart';
-import '../../../models/lib/models/enums.dart';
+import '../models/player.dart';
+import '../models/hex_tile.dart';
+import '../models/vertex.dart';
+import '../models/game_state.dart';
+import '../models/enums.dart';
 
 /// 資源管理サービス
 /// - 資源の配布ロジック

@@ -1,5 +1,5 @@
 // modelsからimport
-import '../../../models/lib/models/enums.dart';
+import '../models/enums.dart';
 
 /// 建設物のコスト定義
 ///
