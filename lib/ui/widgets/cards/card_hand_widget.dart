@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 // modelsパッケージからimport
-import '../../../../models/lib/models/player.dart';
-import '../../../../models/lib/models/development_card.dart';
-import '../../../../models/lib/models/enums.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/development_card.dart';
+import 'package:test_web_app/models/enums.dart';
 
 // 発展カードウィジェットをimport
-import 'development_card_widget.dart';
+import 'package:test_web_app/ui/widgets/cards/development_card_widget.dart';
 
 /// プレイヤーの発展カード一覧表示ウィジェット
 class CardHandWidget extends StatefulWidget {

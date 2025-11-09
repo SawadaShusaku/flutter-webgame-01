@@ -1,35 +1,39 @@
-# 緊急修正: ui/widgets/ 内の全importパスを修正
+# 緊急修正: ui/widgets/内の全importを絶対パスに変更
 
 ## タスク
-lib/ui/widgets/ 配下の全サブディレクトリのDartファイルのimportパスを修正してください。
+lib/ui/widgets/ 配下の全サブディレクトリのDartファイルのimportを絶対パスに変更してください。
 
-## 修正ルール
+## 変更ルール
 
-### 1. modelsのimport
+### 相対パスから絶対パスへ
 ```dart
-❌ import '../../../../models/xxx.dart';
-✅ import '../../../models/xxx.dart';
+❌ import '../../../models/game_state.dart';
+❌ import '../../../services/game_controller.dart';
+❌ import '../player/player_info_widget.dart';
+✅ import 'package:test_web_app/models/game_state.dart';
+✅ import 'package:test_web_app/services/game_controller.dart';
+✅ import 'package:test_web_app/ui/widgets/player/player_info_widget.dart';
 ```
 
-### 2. servicesのimport
+## 全てのパターン
 ```dart
-❌ import '../../../../services/xxx.dart';
-✅ import '../../../services/xxx.dart';
-```
+// models
+✅ import 'package:test_web_app/models/xxx.dart';
 
-### 3. utilsのimport
-```dart
-❌ import '../../../../utils/xxx.dart';
-✅ import '../../../utils/xxx.dart';
-```
+// services
+✅ import 'package:test_web_app/services/xxx.dart';
 
-### 4. 同じwidgets内のimport
-```dart
-# widgets/board/ から widgets/player/ を参照する場合
-✅ import '../player/player_info_widget.dart';
+// utils
+✅ import 'package:test_web_app/utils/xxx.dart';
 
-# widgets/actions/ から widgets/board/ を参照する場合
-✅ import '../board/game_board_widget.dart';
+// 他のwidgets（別のサブディレクトリ）
+✅ import 'package:test_web_app/ui/widgets/xxx/xxx.dart';
+
+// screens
+✅ import 'package:test_web_app/ui/screens/xxx.dart';
+
+// painters
+✅ import 'package:test_web_app/ui/painters/xxx.dart';
 ```
 
 ## 対象ディレクトリ
@@ -44,13 +48,12 @@ lib/ui/widgets/ 配下の全サブディレクトリのDartファイルのimport
 
 ## 実行方法
 1. 各サブディレクトリの.dartファイルを開く
-2. import文を確認
-3. 上記ルールに従って修正
-4. **全てのファイルを修正したらコミット**
+2. 全てのimport文を絶対パスに変更
+3. **全てのファイルを修正したらコミット**
 
 ```bash
 git add -A
-git commit -m "fix(ui-widgets): 全importパスを修正"
+git commit -m "refactor(ui-widgets): 全importを絶対パスに変更"
 ```
 
 完了したら報告してください。
