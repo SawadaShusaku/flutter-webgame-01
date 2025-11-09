@@ -15,6 +15,13 @@ jobs:
     - name: リポジトリをチェックアウト
       uses: actions/checkout@v4
 
+    - name: チェックアウトされたコミットを確認
+      run: |
+        echo "=== Current commit ==="
+        git log -1 --oneline
+        echo "=== widgetbook.dart first 30 lines ==="
+        head -30 lib/widgetbook.dart
+
     - name: Java 17 をセットアップ
       uses: actions/setup-java@v4
       with:
