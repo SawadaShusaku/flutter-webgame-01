@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import '../../../services/dice_service.dart';
+import 'package:test_web_app/services/dice_service.dart';
 
 /// サイコロを振るウィジェット
 class DiceRoller extends StatefulWidget {

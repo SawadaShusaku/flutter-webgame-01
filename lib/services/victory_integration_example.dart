@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'victory_service.dart';
-import 'game_state_manager.dart';
-import '../ui/widgets/log/game_log_widget.dart';
+import 'package:test_web_app/services/victory_service.dart';
+import 'package:test_web_app/services/game_state_manager.dart';
+import 'package:test_web_app/ui/widgets/log/game_log_widget.dart';
 
 /// 勝利判定統合の使用例
 ///
