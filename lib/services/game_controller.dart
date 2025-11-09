@@ -130,10 +130,10 @@ class GameController extends ChangeNotifier {
   Future<bool> buildSettlement(String vertexId) async {
     if (_state == null) return false;
 
-    final success = await _gameService.buildSettlement(
+    final success = _gameService.buildSettlement(
       _state!,
-      _state!.currentPlayer,
       vertexId,
+      _state!.currentPlayer.id,
     );
 
     if (success) {
@@ -147,10 +147,10 @@ class GameController extends ChangeNotifier {
   Future<bool> buildRoad(String edgeId) async {
     if (_state == null) return false;
 
-    final success = await _gameService.buildRoad(
+    final success = _gameService.buildRoad(
       _state!,
-      _state!.currentPlayer,
       edgeId,
+      _state!.currentPlayer.id,
     );
 
     if (success) {

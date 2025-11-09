@@ -106,9 +106,9 @@ class BoardGenerator {
   List<Offset> _calculateHexPositions() {
     const hexSize = 80.0; // 六角形のサイズ
     const hexWidth = hexSize * 2.0;
-    const hexHeight = hexSize * sqrt(3);
+    final hexHeight = hexSize * sqrt(3);
     const horizontalSpacing = hexWidth * 0.75;
-    const verticalSpacing = hexHeight;
+    final verticalSpacing = hexHeight;
 
     final positions = <Offset>[];
 

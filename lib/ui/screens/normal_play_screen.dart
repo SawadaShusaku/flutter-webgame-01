@@ -4,6 +4,7 @@ import 'package:test_web_app/services/game_controller.dart';
 import 'package:test_web_app/models/game_state.dart';
 import 'package:test_web_app/ui/widgets/board/game_board_widget.dart';
 import 'package:test_web_app/ui/widgets/log/game_log_widget.dart';
+import 'package:test_web_app/utils/constants.dart';
 
 class NormalPlayScreen extends StatelessWidget {
   const NormalPlayScreen({super.key});
@@ -123,7 +124,7 @@ class NormalPlayScreen extends StatelessWidget {
                 top: 8,
                 bottom: 8,
                 width: 200,
-                child: GameLogWidget(logs: controller.gameLog),
+                child: GameLogWidget(entries: const []),
               ),
             ],
           ),
@@ -165,14 +166,16 @@ class NormalPlayScreen extends StatelessWidget {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: currentPlayer.color,
+              color: currentPlayer != null
+                  ? GameColors.getPlayerColor(currentPlayer.color)
+                  : Colors.grey,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.black, width: 2),
             ),
           ),
           const SizedBox(width: 12),
           Text(
-            currentPlayer.name,
+            currentPlayer?.name ?? '???',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -187,7 +190,7 @@ class NormalPlayScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              'ターン ${state.turnNumber}',
+              'ターン ${state?.turnNumber ?? 0}',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -201,7 +204,7 @@ class NormalPlayScreen extends StatelessWidget {
               const Icon(Icons.star, color: Colors.amber, size: 20),
               const SizedBox(width: 4),
               Text(
-                '${currentPlayer.victoryPoints}点',
+                '${currentPlayer?.victoryPoints ?? 0}点',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -240,7 +243,7 @@ class NormalPlayScreen extends StatelessWidget {
 
   /// 手札エリア
   Widget _buildHandArea(GameController controller) {
-    final resources = controller.currentPlayer.resources;
+    final resources = controller.currentPlayer?.resources ?? {};
 
     return Container(
       color: Colors.brown[100],
@@ -261,7 +264,7 @@ class NormalPlayScreen extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               children: resources.entries.map((entry) {
                 return _ResourceCard(
-                  name: entry.key,
+                  name: entry.key.name,
                   count: entry.value,
                 );
               }).toList(),
@@ -309,7 +312,7 @@ class NormalPlayScreen extends StatelessWidget {
                   icon: Icons.home,
                   label: '集落',
                   enabled: controller.canBuildSettlement(),
-                  onPressed: () => controller.buildSettlement(),
+                  onPressed: () => controller.buildSettlement('v_0'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -318,7 +321,7 @@ class NormalPlayScreen extends StatelessWidget {
                   icon: Icons.location_city,
                   label: '都市',
                   enabled: controller.canBuildCity(),
-                  onPressed: () => controller.buildCity(),
+                  onPressed: () => controller.buildCity('v_0'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -327,7 +330,7 @@ class NormalPlayScreen extends StatelessWidget {
                   icon: Icons.route,
                   label: '道路',
                   enabled: controller.canBuildRoad(),
-                  onPressed: () => controller.buildRoad(),
+                  onPressed: () => controller.buildRoad('e_0'),
                 ),
               ),
             ],
