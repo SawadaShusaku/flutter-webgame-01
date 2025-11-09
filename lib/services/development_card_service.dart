@@ -90,7 +90,7 @@ class DevelopmentCardService {
       orElse: () => throw ArgumentError('無効なタイルID: $newRobberHexId'),
     );
 
-    if (gameState.robberHexId == newRobberHexId) {
+    if (gameState.robber?.currentHexId == newRobberHexId) {
       return const DevelopmentCardResult.failure('盗賊は同じ場所に移動できません');
     }
 
@@ -103,8 +103,8 @@ class DevelopmentCardService {
     }
 
     // 5. 盗賊を移動
-    final oldRobberHexId = gameState.robberHexId;
-    gameState.robberHexId = newRobberHexId;
+    final oldRobberHexId = gameState.robber?.currentHexId;
+    gameState.robber?.moveTo(newRobberHexId);
 
     // 6. 対象プレイヤーから資源を奪う
     ResourceType? stolenResource;

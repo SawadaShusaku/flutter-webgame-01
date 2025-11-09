@@ -9,6 +9,7 @@ import 'package:test_web_app/models/edge.dart';
 import 'package:test_web_app/models/building.dart';
 import 'package:test_web_app/models/road.dart';
 import 'package:test_web_app/models/development_card.dart';
+import 'package:test_web_app/models/robber.dart';
 import 'package:test_web_app/models/enums.dart';
 
 // servicesからimport
@@ -75,6 +76,9 @@ class GameService {
     // 発展カードデッキを生成
     final developmentCardDeck = _createDevelopmentCardDeck();
 
+    // 盗賊を砂漠タイルに配置
+    final robber = Robber(currentHexId: board.desertHexId);
+
     // ゲーム状態を作成
     return GameState(
       gameId: gameId,
@@ -86,7 +90,7 @@ class GameService {
       phase: GamePhase.setup,
       currentPlayerIndex: 0,
       turnNumber: 0,
-      robberHexId: board.desertHexId,
+      robber: robber,
     );
   }
 
@@ -96,27 +100,27 @@ class GameService {
 
     // 騎士カード（14枚）
     for (int i = 0; i < 14; i++) {
-      deck.add(const DevelopmentCard(type: DevelopmentCardType.knight));
+      deck.add(DevelopmentCard(type: DevelopmentCardType.knight));
     }
 
     // 勝利点カード（5枚）
     for (int i = 0; i < 5; i++) {
-      deck.add(const DevelopmentCard(type: DevelopmentCardType.victoryPoint));
+      deck.add(DevelopmentCard(type: DevelopmentCardType.victoryPoint));
     }
 
     // 街道建設カード（2枚）
     for (int i = 0; i < 2; i++) {
-      deck.add(const DevelopmentCard(type: DevelopmentCardType.roadBuilding));
+      deck.add(DevelopmentCard(type: DevelopmentCardType.roadBuilding));
     }
 
     // 資源発見カード（2枚）
     for (int i = 0; i < 2; i++) {
-      deck.add(const DevelopmentCard(type: DevelopmentCardType.yearOfPlenty));
+      deck.add(DevelopmentCard(type: DevelopmentCardType.yearOfPlenty));
     }
 
     // 資源独占カード（2枚）
     for (int i = 0; i < 2; i++) {
-      deck.add(const DevelopmentCard(type: DevelopmentCardType.monopoly));
+      deck.add(DevelopmentCard(type: DevelopmentCardType.monopoly));
     }
 
     // シャッフル
@@ -455,16 +459,16 @@ class GameService {
   /// 戻り値: 移動が成功したかどうか
   bool moveRobber(GameState gameState, String targetHexId) {
     // 現在の盗賊の位置を解除
-    if (gameState.robberHexId != null) {
+    if (gameState.robber != null) {
       final currentHex =
-          gameState.board.firstWhere((h) => h.id == gameState.robberHexId);
+          gameState.board.firstWhere((h) => h.id == gameState.robber!.currentHexId);
       currentHex.hasRobber = false;
     }
 
     // 新しい位置に配置
     final targetHex = gameState.board.firstWhere((h) => h.id == targetHexId);
     targetHex.hasRobber = true;
-    gameState.robberHexId = targetHexId;
+    gameState.robber?.moveTo(targetHexId);
 
     // イベントログに追加
     gameState.logEvent(GameEvent(
