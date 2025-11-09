@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Catan',
         theme: ThemeData.dark(),
+        debugShowCheckedModeBanner: false,  // DEBUGバナー非表示
         home: const TitleScreen(),
       ),
     );
