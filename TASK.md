@@ -1,32 +1,54 @@
-# Phase 3: 通常プレイ画面の強化
+# 緊急修正: ui/screens/ 内の全importパスを修正
 
-## タスク概要
-通常プレイフェーズの画面を完全に機能させてください。
+## タスク
+lib/ui/screens/ 配下の全てのDartファイルのimportパスを修正してください。
 
-## 実装内容
+## 修正ルール
 
-### 1. `lib/ui/screens/normal_play_screen.dart` を作成
-- 初期配置後の通常プレイ専用画面
-- レイアウト:
-  - 上部: 現在のプレイヤー、ターン数、勝利点
-  - 中央: ゲームボード（`GameBoardWidget`使用）
-  - 右側: アクションパネル
-    - サイコロボタン（まだ振ってない場合のみ）
-    - 建設ボタン（集落、都市、道路）
-    - ターン終了ボタン
-  - 下部: プレイヤーハンド（手札表示）
+### 1. modelsのimport
+```dart
+❌ import '../../../models/xxx.dart';
+✅ import '../../models/xxx.dart';
+```
 
-### 2. 既存の `game_screen.dart` を更新
-- `SetupScreen` から `NormalPlayScreen` への遷移
-- フェーズに応じた画面切り替え
+### 2. servicesのimport
+```dart
+❌ import '../../../services/xxx.dart';
+❌ import '../../controllers/xxx.dart';
+✅ import '../../services/xxx.dart';
+```
 
-### 3. ゲームログ表示
-- 簡単なログウィジェット作成
-- 主要アクション（建設、サイコロ、資源獲得）をログ表示
+### 3. widgetsのimport
+```dart
+❌ import '../widgets/game_board_widget.dart';
+✅ import '../widgets/board/game_board_widget.dart';
 
-## 重要ポイント
-- `Provider` で `GameController` を監視
-- ボタンの有効/無効は `GameController` の状態で制御
-- レスポンシブレイアウト（wide/narrow対応）
+❌ import '../widgets/game_log_widget.dart';
+✅ import '../widgets/log/game_log_widget.dart';
+```
 
-完成したら commit してください。
+### 4. utilsのimport
+```dart
+✅ import '../../utils/constants.dart';
+```
+
+## 対象ファイル
+- game_screen.dart
+- setup_screen.dart
+- normal_play_screen.dart
+- trade_screen.dart
+- game_over_screen.dart
+- その他全て
+
+## 実行方法
+1. 各.dartファイルを開く
+2. import文を確認
+3. 上記ルールに従って修正
+4. **全てのファイルを修正したらコミット**
+
+```bash
+git add -A
+git commit -m "fix(ui-screens): 全importパスを修正"
+```
+
+完了したら報告してください。
