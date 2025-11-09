@@ -1,35 +1,40 @@
-# Integration担当タスク
+# Phase 4: 盗賊システム基礎
 
-## 役割
-統合とテスト
+## タスク概要
+盗賊（robber）システムの基礎を実装してください。
 
-## フェーズ1の担当タスク
+## 実装内容
 
-### 1. コンポーネント統合
-- models, services, ui-widgets, ui-screens の成果物を統合
-- import文の調整
-- 依存関係の解決
-- main.dartの更新
+### 1. `lib/models/robber.dart` を作成
+- Robber クラス
+- 現在位置（HexTile ID）
 
-### 2. 動作確認
-- 静的ボード表示の確認
-- タイトル→メインメニュー→ゲーム画面の遷移確認
-- 六角形ボードが正しく表示されることを確認
-- レイアウトの調整
+### 2. `lib/services/robber_service.dart` を作成
+- 盗賊移動ロジック: `moveRobber(GameState, String hexId)`
+- 資源を奪う: `stealResourceFrom(Player target, Player thief)`
+- 対象プレイヤー取得: `getPlayersOnHex(GameState, String hexId)`
+- 7が出た時の処理: `handleSevenRolled(GameState)`
 
-### 3. ビルド確認
-- コンパイルエラーの修正
-- 警告の解消
-- GitHub Actionsでのビルド成功確認
+### 3. `lib/services/discard_service.dart` を作成
+- 資源破棄処理
+- 8枚以上持っているプレイヤーを検出
+- 半分の枚数を破棄させる
 
-## 依存関係
-- 全てのコンポーネントに依存
+### 4. `lib/ui/widgets/robber/robber_widget.dart` を作成
+- 盗賊アイコンの表示
+- 現在いるタイルに表示
 
-## 成果物
-- 統合されたアプリケーション
-- 動作するAPK（GitHub Actions経由）
+### 5. GameState に robber フィールド追加
+- `game_state.dart` を更新
+- `Robber? robber` フィールド追加
+- 初期位置は砂漠タイル
 
-## 完了条件
-- アプリが起動する
-- 静的なカタンボードが表示される
-- エラーなくビルドできる
+## 重要ポイント
+- 盗賊は資源を生産しないタイルに配置
+- 盗賊がいるタイルは資源生産されない
+- 7が出たら:
+  1. 8枚以上のプレイヤーは半分破棄
+  2. 現在プレイヤーが盗賊を移動
+  3. 対象プレイヤーから1枚ランダムに奪う
+
+完成したら commit してください。
