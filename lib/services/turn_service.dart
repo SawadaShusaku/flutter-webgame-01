@@ -1,6 +1,6 @@
-import '../models/game_state.dart';
-import '../models/player.dart';
-import '../models/enums.dart';
+import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/enums.dart';
 
 /// ターン管理サービス
 class TurnService {
@@ -79,12 +79,17 @@ class TurnService {
     state.currentPlayerIndex = 0;
     state.turnNumber = 0;
 
-    // 砂漠タイルに盗賊を配置
-    final desertTile = state.board.firstWhere(
-      (tile) => tile.terrain == TerrainType.desert,
-    );
-    state.robberHexId = desertTile.id;
-    desertTile.hasRobber = true;
+    // 砂漠タイルに盗賊がいる場合、hasRobberフラグを設定
+    if (state.robber != null) {
+      final robberHexId = state.robber!.currentHexId;
+      final robberTile = state.board.firstWhere(
+        (tile) => tile.id == robberHexId,
+        orElse: () => state.board.firstWhere(
+          (tile) => tile.terrain == TerrainType.desert,
+        ),
+      );
+      robberTile.hasRobber = true;
+    }
 
     // 開始ログ
     state.logEvent(GameEvent(

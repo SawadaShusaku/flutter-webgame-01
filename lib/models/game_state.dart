@@ -1,11 +1,11 @@
-import 'player.dart';
-import 'hex_tile.dart';
-import 'vertex.dart';
-import 'edge.dart';
-import 'development_card.dart';
-import 'trade.dart';
-import 'robber.dart';
-import 'enums.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/hex_tile.dart';
+import 'package:test_web_app/models/vertex.dart';
+import 'package:test_web_app/models/edge.dart';
+import 'package:test_web_app/models/development_card.dart';
+import 'package:test_web_app/models/trade.dart';
+import 'package:test_web_app/models/robber.dart';
+import 'package:test_web_app/models/enums.dart';
 
 /// ゲーム状態全体
 class GameState {

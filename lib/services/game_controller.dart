@@ -1,17 +1,19 @@
+import 'dart:math';
 import 'package:flutter/foundation.dart';
-import '../models/game_state.dart';
-import '../models/player.dart';
-import '../models/player_config.dart';
-import '../models/hex_tile.dart';
-import '../models/vertex.dart';
-import '../models/edge.dart';
-import '../models/development_card.dart';
-import '../models/enums.dart';
-import 'board_generator.dart';
-import 'turn_service.dart';
-import 'resource_service.dart';
-import 'game_service.dart';
-import 'trade_service.dart';
+import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/models/player.dart';
+import 'package:test_web_app/models/player_config.dart';
+import 'package:test_web_app/models/hex_tile.dart';
+import 'package:test_web_app/models/vertex.dart';
+import 'package:test_web_app/models/edge.dart';
+import 'package:test_web_app/models/development_card.dart';
+import 'package:test_web_app/models/robber.dart';
+import 'package:test_web_app/models/enums.dart';
+import 'package:test_web_app/services/board_generator.dart';
+import 'package:test_web_app/services/turn_service.dart';
+import 'package:test_web_app/services/resource_service.dart';
+import 'package:test_web_app/services/game_service.dart';
+import 'package:test_web_app/services/trade_service.dart';
 
 /// ゲーム全体を管理するコントローラー
 /// UIから呼び出される主要なエントリポイント
@@ -23,6 +25,7 @@ class GameController extends ChangeNotifier {
   final ResourceService _resourceService = ResourceService();
   final GameService _gameService = GameService();
   final TradeService _tradeService = TradeService();
+  final Random _random = Random();
 
   GameState? get state => _state;
   Player? get currentPlayer => _state?.currentPlayer;
@@ -47,6 +50,9 @@ class GameController extends ChangeNotifier {
     // 発展カードデッキ作成
     final developmentCards = _createDevelopmentCardDeck();
 
+    // 盗賊を砂漠タイルに配置
+    final robber = Robber(currentHexId: boardData.desertHexId);
+
     // ゲーム状態作成
     _state = GameState(
       gameId: 'game_${DateTime.now().millisecondsSinceEpoch}',
@@ -56,7 +62,7 @@ class GameController extends ChangeNotifier {
       edges: boardData.edges,
       harbors: boardData.harbors,
       developmentCardDeck: developmentCards,
-      robberHexId: boardData.desertHexId,
+      robber: robber,
     );
 
     // ゲーム初期化
@@ -76,7 +82,10 @@ class GameController extends ChangeNotifier {
       return;
     }
 
-    final dice = _gameService.rollDice();
+    // サイコロを振る（2つの6面ダイス）
+    final die1 = _random.nextInt(6) + 1;
+    final die2 = _random.nextInt(6) + 1;
+    final dice = DiceRoll(die1, die2);
     _state!.lastDiceRoll = dice;
 
     // 7が出た場合
@@ -85,7 +94,7 @@ class GameController extends ChangeNotifier {
       _state!.phase = GamePhase.robberPlacement;
     } else {
       // 資源生産
-      _resourceService.produceResources(_state!, dice.total);
+      _resourceService.distributeResources(dice.total, _state!);
     }
 
     notifyListeners();
