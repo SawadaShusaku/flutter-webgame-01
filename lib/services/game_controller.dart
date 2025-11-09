@@ -11,6 +11,7 @@ import 'board_generator.dart';
 import 'turn_service.dart';
 import 'resource_service.dart';
 import 'game_service.dart';
+import 'trade_service.dart';
 
 /// ゲーム全体を管理するコントローラー
 /// UIから呼び出される主要なエントリポイント
@@ -21,6 +22,7 @@ class GameController extends ChangeNotifier {
   final TurnService _turnService = TurnService();
   final ResourceService _resourceService = ResourceService();
   final GameService _gameService = GameService();
+  final TradeService _tradeService = TradeService();
 
   GameState? get state => _state;
   Player? get currentPlayer => _state?.currentPlayer;
@@ -142,6 +144,69 @@ class GameController extends ChangeNotifier {
     }
 
     return success;
+  }
+
+  /// 銀行交易を実行
+  Future<bool> executeBankTrade(
+    ResourceType giving,
+    ResourceType receiving,
+  ) async {
+    if (_state == null) return false;
+
+    final success = _tradeService.executeBankTrade(
+      _state!.currentPlayer,
+      giving,
+      receiving,
+    );
+
+    if (success) {
+      notifyListeners();
+    }
+
+    return success;
+  }
+
+  /// プレイヤー間交易を提案
+  Future<void> proposePlayerTrade(
+    Map<ResourceType, int> offering,
+    Map<ResourceType, int> requesting,
+  ) async {
+    if (_state == null) return;
+
+    final offer = _tradeService.createTradeOffer(
+      _state!.currentPlayer.id,
+      offering,
+      requesting,
+    );
+
+    _state!.currentTradeOffer = offer;
+    notifyListeners();
+  }
+
+  /// 交易提案を承認
+  Future<bool> acceptTrade(String acceptorId) async {
+    if (_state == null || _state!.currentTradeOffer == null) return false;
+
+    final offer = _state!.currentTradeOffer!;
+    final proposer = _state!.players.firstWhere((p) => p.id == offer.proposerId);
+    final acceptor = _state!.players.firstWhere((p) => p.id == acceptorId);
+
+    final success = _tradeService.executePlayerTrade(offer, proposer, acceptor);
+
+    if (success) {
+      _state!.currentTradeOffer = null;
+      notifyListeners();
+    }
+
+    return success;
+  }
+
+  /// 交易提案をキャンセル
+  Future<void> cancelTrade() async {
+    if (_state == null) return;
+
+    _state!.currentTradeOffer = null;
+    notifyListeners();
   }
 
   /// 発展カードデッキを作成

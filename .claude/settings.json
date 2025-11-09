@@ -75,14 +75,21 @@
   },
 
   "tmux": {
-    "sessionName": "catan-dev",
+    "sessionName": "0",
+    "note": "重要: 既存のセッション「0」を使用。新しいセッションは作成しない！",
     "paneCount": 5,
     "paneAssignments": {
-      "0": "models",
-      "1": "services",
-      "2": "ui-screens",
-      "3": "ui-widgets",
-      "4": "integration"
+      "0": "main (Pane 0 - メインの統合作業用)",
+      "1": "services (Pane 1 - /root/worktrees/services)",
+      "2": "ui-screens (Pane 2 - /root/worktrees/ui-screens)",
+      "3": "ui-widgets (Pane 3 - /root/worktrees/ui-widgets)",
+      "4": "integration (Pane 4 - /root/worktrees/integration)"
+    },
+    "commandSendingMethod": {
+      "script": "/tmp/send_command.sh",
+      "format": "/tmp/send_command.sh 0:0.{pane_number} \"command\"",
+      "example": "/tmp/send_command.sh 0:0.1 \"claude TASK.md\"",
+      "warning": "セッション名は必ず「0」を使用。catan-devなど別のセッションを作成してはいけない"
     }
   },
 
