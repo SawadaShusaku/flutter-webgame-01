@@ -3,7 +3,7 @@ import 'package:test_web_app/models/hex_tile.dart';
 import 'package:test_web_app/models/vertex.dart';
 import 'package:test_web_app/models/edge.dart';
 import 'package:test_web_app/models/development_card.dart';
-import 'package:test_web_app/models/trade.dart';
+import 'package:test_web_app/models/trade_offer.dart';
 import 'package:test_web_app/models/robber.dart';
 import 'package:test_web_app/models/enums.dart';
 

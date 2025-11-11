@@ -114,3 +114,49 @@ class BankTrade {
   /// 取引レート
   int get rate => givingAmount ~/ receivingAmount;
 }
+
+/// 港の種類
+enum HarborType {
+  generic,    // 3:1 汎用港
+  lumber,     // 2:1 木材港
+  brick,      // 2:1 レンガ港
+  wool,       // 2:1 羊毛港
+  grain,      // 2:1 小麦港
+  ore,        // 2:1 鉱石港
+}
+
+/// 港
+class Harbor {
+  final String id;
+  final HarborType type;
+  final List<String> vertexIds;  // この港に接続されている頂点ID
+
+  Harbor({
+    required this.id,
+    required this.type,
+    required this.vertexIds,
+  });
+
+  /// 取引レート
+  int get tradeRate {
+    return type == HarborType.generic ? 3 : 2;
+  }
+
+  /// 指定された資源タイプに対応する港か
+  bool isResourceHarbor(ResourceType resource) {
+    switch (type) {
+      case HarborType.lumber:
+        return resource == ResourceType.lumber;
+      case HarborType.brick:
+        return resource == ResourceType.brick;
+      case HarborType.wool:
+        return resource == ResourceType.wool;
+      case HarborType.grain:
+        return resource == ResourceType.grain;
+      case HarborType.ore:
+        return resource == ResourceType.ore;
+      case HarborType.generic:
+        return false;
+    }
+  }
+}

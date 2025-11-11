@@ -185,7 +185,8 @@ class _TradeScreenState extends State<TradeScreen>
     // TradeOfferオブジェクトを作成
     final offer = TradeOffer(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      proposerId: controller.currentPlayer!.id,
+      fromPlayerId: controller.currentPlayer!.id,
+      toPlayerId: '', // 全員に提案する場合は空文字列
       offering: _convertToResourceTypeMap(_playerOffering),
       requesting: _convertToResourceTypeMap(_playerRequesting),
       createdAt: DateTime.now(),

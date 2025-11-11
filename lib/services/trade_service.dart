@@ -1,6 +1,6 @@
 import 'package:test_web_app/models/game_state.dart';
 import 'package:test_web_app/models/player.dart';
-import 'package:test_web_app/models/trade.dart';
+import 'package:test_web_app/models/trade_offer.dart';
 import 'package:test_web_app/models/enums.dart';
 import 'package:test_web_app/utils/constants.dart';
 
