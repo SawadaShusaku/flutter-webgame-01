@@ -356,9 +356,6 @@ class GameService {
     // プレイヤーに追加
     player.addDevelopmentCard(card);
 
-    // 購入を通知（同ターン使用制限のため）
-    _developmentCardService.notifyCardPurchased(card);
-
     // 勝利点カードの場合、勝利点を更新
     if (card.type == DevelopmentCardType.victoryPoint) {
       player.victoryPoints = player.calculateVictoryPoints();
@@ -375,21 +372,12 @@ class GameService {
     return card;
   }
 
-  /// ターンを開始
-  ///
-  /// [gameState] ゲーム状態
-  void startTurn(GameState gameState) {
-    _developmentCardService.startTurn();
-  }
-
   /// ターンを終了して次のプレイヤーに進む
   ///
   /// [gameState] ゲーム状態
   void endTurn(GameState gameState) {
     gameState.nextPlayer();
     gameState.phase = GamePhase.normalPlay;
-    // 次のプレイヤーのターンを開始
-    startTurn(gameState);
   }
 
   /// 距離ルールをチェック
@@ -621,10 +609,11 @@ class GameService {
   /// プレイヤーが使用可能なカードのリストを取得
   ///
   /// [player] プレイヤー
+  /// [gameState] ゲーム状態
   ///
   /// 戻り値: 使用可能なカードのリスト
-  List<DevelopmentCard> getPlayableCards(Player player) {
-    return _developmentCardService.getPlayableCards(player);
+  List<DevelopmentCard> getPlayableCards(Player player, GameState gameState) {
+    return _developmentCardService.getPlayableCards(player, gameState);
   }
 
   /// プレイヤーのカード種別ごとの枚数を取得

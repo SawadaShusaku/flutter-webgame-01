@@ -181,26 +181,6 @@ class GameController extends ChangeNotifier {
     return success;
   }
 
-  /// 銀行交易を実行
-  Future<bool> executeBankTrade(
-    ResourceType giving,
-    ResourceType receiving,
-  ) async {
-    if (_state == null) return false;
-
-    final success = _tradeService.executeBankTrade(
-      _state!.currentPlayer,
-      giving,
-      receiving,
-    );
-
-    if (success) {
-      notifyListeners();
-    }
-
-    return success;
-  }
-
   /// プレイヤー間交易を提案
   Future<void> proposePlayerTrade(
     Map<ResourceType, int> offering,

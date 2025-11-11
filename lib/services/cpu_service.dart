@@ -34,7 +34,7 @@ class CPUService {
   CPUAction? _decideSetupAction(GameState state, Player player) {
     // ランダムに建設可能な頂点を選ぶ
     final availableVertices = state.vertices
-        .where((v) => v.buildingType == null && _isValidSetupSettlement(state, v))
+        .where((v) => !v.hasBuilding && _isValidSetupSettlement(state, v))
         .toList();
 
     if (availableVertices.isNotEmpty) {
@@ -47,7 +47,7 @@ class CPUService {
 
     // 道路配置
     final availableEdges = state.edges
-        .where((e) => e.playerId == null && _isValidSetupRoad(state, e, player))
+        .where((e) => !e.hasRoad && _isValidSetupRoad(state, e, player))
         .toList();
 
     if (availableEdges.isNotEmpty) {
@@ -68,7 +68,7 @@ class CPUService {
     // 集落が建てられるか
     if (_canBuildSettlement(player)) {
       final availableVertices = state.vertices
-          .where((v) => v.buildingType == null && _isValidSettlementPlacement(state, v, player))
+          .where((v) => !v.hasBuilding && _isValidSettlementPlacement(state, v, player))
           .toList();
 
       if (availableVertices.isNotEmpty) {
@@ -83,7 +83,7 @@ class CPUService {
     // 道路が建てられるか
     if (_canBuildRoad(player)) {
       final availableEdges = state.edges
-          .where((e) => e.playerId == null && _isValidRoadPlacement(state, e, player))
+          .where((e) => !e.hasRoad && _isValidRoadPlacement(state, e, player))
           .toList();
 
       if (availableEdges.isNotEmpty) {
@@ -98,7 +98,7 @@ class CPUService {
     // 都市が建てられるか
     if (_canBuildCity(player)) {
       final availableVertices = state.vertices
-          .where((v) => v.buildingType == BuildingType.settlement && v.playerId == player.id)
+          .where((v) => v.building?.type == BuildingType.settlement && v.building?.playerId == player.id)
           .toList();
 
       if (availableVertices.isNotEmpty) {

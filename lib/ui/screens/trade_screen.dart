@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_web_app/services/game_controller.dart';
 import 'package:test_web_app/models/game_state.dart';
+import 'package:test_web_app/models/enums.dart';
 import 'package:test_web_app/ui/widgets/trade/resource_selector.dart';
 import 'package:test_web_app/ui/widgets/trade/trade_offer_widget.dart';
 
@@ -16,6 +17,15 @@ class TradeScreen extends StatefulWidget {
 class _TradeScreenState extends State<TradeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  // 日本語文字列 → ResourceType のマッピング
+  static const Map<String, ResourceType> _resourceTypeMap = {
+    '木材': ResourceType.lumber,
+    'レンガ': ResourceType.brick,
+    '羊毛': ResourceType.wool,
+    '小麦': ResourceType.grain,
+    '鉱石': ResourceType.ore,
+  };
 
   // 銀行交易用
   final Map<String, int> _bankOffering = {};
@@ -93,7 +103,9 @@ class _TradeScreenState extends State<TradeScreen>
     // 資源不足チェック
     for (var entry in _bankOffering.entries) {
       if (entry.value > 0) {
-        final available = controller.currentPlayer.resources[entry.key] ?? 0;
+        final resourceType = _resourceTypeMap[entry.key];
+        if (resourceType == null) continue;
+        final available = controller.currentPlayer?.resources[resourceType] ?? 0;
         if (available < entry.value) {
           _showError(context, '${entry.key}が不足しています');
           return;
@@ -104,19 +116,28 @@ class _TradeScreenState extends State<TradeScreen>
     // 交易実行
     for (var entry in _bankOffering.entries) {
       if (entry.value > 0) {
-        controller.currentPlayer.resources[entry.key] =
-            (controller.currentPlayer.resources[entry.key] ?? 0) - entry.value;
+        final resourceType = _resourceTypeMap[entry.key];
+        if (resourceType == null) continue;
+        controller.currentPlayer?.resources[resourceType] =
+            (controller.currentPlayer?.resources[resourceType] ?? 0) - entry.value;
       }
     }
 
     for (var entry in _bankRequesting.entries) {
       if (entry.value > 0) {
-        controller.currentPlayer.resources[entry.key] =
-            (controller.currentPlayer.resources[entry.key] ?? 0) + entry.value;
+        final resourceType = _resourceTypeMap[entry.key];
+        if (resourceType == null) continue;
+        controller.currentPlayer?.resources[resourceType] =
+            (controller.currentPlayer?.resources[resourceType] ?? 0) + entry.value;
       }
     }
 
-    controller.state.addLog('${controller.currentPlayer.name}が銀行と交易しました');
+    controller.state?.logEvent(GameEvent(
+      timestamp: DateTime.now(),
+      playerId: controller.currentPlayer!.id,
+      type: GameEventType.tradeExecuted,
+      data: {'tradeType': 'bank'},
+    ));
     controller.notifyListeners();
 
     // リセット
@@ -145,7 +166,9 @@ class _TradeScreenState extends State<TradeScreen>
     // 資源不足チェック
     for (var entry in _playerOffering.entries) {
       if (entry.value > 0) {
-        final available = controller.currentPlayer.resources[entry.key] ?? 0;
+        final resourceType = _resourceTypeMap[entry.key];
+        if (resourceType == null) continue;
+        final available = controller.currentPlayer?.resources[resourceType] ?? 0;
         if (available < entry.value) {
           _showError(context, '${entry.key}が不足しています');
           return;
@@ -164,7 +187,7 @@ class _TradeScreenState extends State<TradeScreen>
         title: const Text('交易提案'),
         content: SingleChildScrollView(
           child: TradeOfferWidget(
-            proposer: controller.currentPlayer,
+            proposer: controller.currentPlayer!,
             offering: Map.from(_playerOffering),
             requesting: Map.from(_playerRequesting),
             isProposer: true,
@@ -307,7 +330,7 @@ class _TradeScreenState extends State<TradeScreen>
           ),
           const SizedBox(height: 12),
           ResourceSelector(
-            currentResources: controller.currentPlayer.resources,
+            currentResources: controller.currentPlayer?.resources ?? {},
             selectedResources: _bankOffering,
             onResourceChanged: _onBankOfferingChanged,
             showAvailable: true,
@@ -429,7 +452,7 @@ class _TradeScreenState extends State<TradeScreen>
           ),
           const SizedBox(height: 12),
           ResourceSelector(
-            currentResources: controller.currentPlayer.resources,
+            currentResources: controller.currentPlayer?.resources ?? {},
             selectedResources: _playerOffering,
             onResourceChanged: _onPlayerOfferingChanged,
             showAvailable: true,
