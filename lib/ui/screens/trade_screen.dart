@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:test_web_app/services/game_controller.dart';
 import 'package:test_web_app/models/game_state.dart';
 import 'package:test_web_app/models/enums.dart';
+import 'package:test_web_app/models/trade_offer.dart';
 import 'package:test_web_app/ui/widgets/trade/resource_selector.dart';
 import 'package:test_web_app/ui/widgets/trade/trade_offer_widget.dart';
 
@@ -135,7 +136,7 @@ class _TradeScreenState extends State<TradeScreen>
     controller.state?.logEvent(GameEvent(
       timestamp: DateTime.now(),
       playerId: controller.currentPlayer!.id,
-      type: GameEventType.tradeExecuted,
+      type: GameEventType.bankTradeCompleted,
       data: {'tradeType': 'bank'},
     ));
     controller.notifyListeners();
@@ -181,16 +182,23 @@ class _TradeScreenState extends State<TradeScreen>
   }
 
   void _showTradeProposal(BuildContext context, GameController controller) {
+    // TradeOfferオブジェクトを作成
+    final offer = TradeOffer(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      proposerId: controller.currentPlayer!.id,
+      offering: _convertToResourceTypeMap(_playerOffering),
+      requesting: _convertToResourceTypeMap(_playerRequesting),
+      createdAt: DateTime.now(),
+    );
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('交易提案'),
         content: SingleChildScrollView(
           child: TradeOfferWidget(
-            proposer: controller.currentPlayer!,
-            offering: Map.from(_playerOffering),
-            requesting: Map.from(_playerRequesting),
-            isProposer: true,
+            offer: offer,
+            fromPlayer: controller.currentPlayer!,
             onCancel: () {
               Navigator.pop(context);
               _resetPlayerTrade();
@@ -199,6 +207,44 @@ class _TradeScreenState extends State<TradeScreen>
         ),
       ),
     );
+  }
+
+  // String keyをResourceTypeに変換するヘルパー
+  Map<ResourceType, int> _convertToResourceTypeMap(Map<String, int> stringMap) {
+    final result = <ResourceType, int>{};
+    stringMap.forEach((key, value) {
+      final resourceType = _resourceTypeMap[key];
+      if (resourceType != null && value > 0) {
+        result[resourceType] = value;
+      }
+    });
+    return result;
+  }
+
+  // ResourceType keyをStringに変換するヘルパー
+  Map<String, int> _convertToStringMap(Map<ResourceType, int> resourceMap) {
+    final result = <String, int>{};
+    resourceMap.forEach((resourceType, value) {
+      final stringKey = _getResourceNameFromType(resourceType);
+      result[stringKey] = value;
+    });
+    return result;
+  }
+
+  // ResourceTypeから日本語名を取得
+  String _getResourceNameFromType(ResourceType resourceType) {
+    switch (resourceType) {
+      case ResourceType.lumber:
+        return '木材';
+      case ResourceType.brick:
+        return 'レンガ';
+      case ResourceType.wool:
+        return '羊毛';
+      case ResourceType.grain:
+        return '小麦';
+      case ResourceType.ore:
+        return '鉱石';
+    }
   }
 
   void _resetBankTrade() {
@@ -330,7 +376,9 @@ class _TradeScreenState extends State<TradeScreen>
           ),
           const SizedBox(height: 12),
           ResourceSelector(
-            currentResources: controller.currentPlayer?.resources ?? {},
+            currentResources: controller.currentPlayer?.resources != null
+                ? _convertToStringMap(controller.currentPlayer!.resources)
+                : {},
             selectedResources: _bankOffering,
             onResourceChanged: _onBankOfferingChanged,
             showAvailable: true,
@@ -452,7 +500,9 @@ class _TradeScreenState extends State<TradeScreen>
           ),
           const SizedBox(height: 12),
           ResourceSelector(
-            currentResources: controller.currentPlayer?.resources ?? {},
+            currentResources: controller.currentPlayer?.resources != null
+                ? _convertToStringMap(controller.currentPlayer!.resources)
+                : {},
             selectedResources: _playerOffering,
             onResourceChanged: _onPlayerOfferingChanged,
             showAvailable: true,
