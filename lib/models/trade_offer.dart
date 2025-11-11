@@ -142,21 +142,31 @@ class Harbor {
     return type == HarborType.generic ? 3 : 2;
   }
 
-  /// 指定された資源タイプに対応する港か
-  bool isResourceHarbor(ResourceType resource) {
+  /// 特定の資源専用の港か（2:1港）
+  bool get isSpecific {
+    return type != HarborType.generic;
+  }
+
+  /// この港で取引できる資源タイプ（特定資源港の場合）
+  ResourceType? get resourceType {
     switch (type) {
       case HarborType.lumber:
-        return resource == ResourceType.lumber;
+        return ResourceType.lumber;
       case HarborType.brick:
-        return resource == ResourceType.brick;
+        return ResourceType.brick;
       case HarborType.wool:
-        return resource == ResourceType.wool;
+        return ResourceType.wool;
       case HarborType.grain:
-        return resource == ResourceType.grain;
+        return ResourceType.grain;
       case HarborType.ore:
-        return resource == ResourceType.ore;
+        return ResourceType.ore;
       case HarborType.generic:
-        return false;
+        return null;
     }
+  }
+
+  /// 指定された資源タイプに対応する港か
+  bool isResourceHarbor(ResourceType resource) {
+    return resourceType == resource;
   }
 }

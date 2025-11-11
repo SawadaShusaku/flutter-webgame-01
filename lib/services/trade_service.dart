@@ -60,11 +60,13 @@ class TradeService {
   TradeOffer createTradeOffer(
     String proposerId,
     Map<ResourceType, int> offering,
-    Map<ResourceType, int> requesting,
-  ) {
+    Map<ResourceType, int> requesting, {
+    String? toPlayerId,
+  }) {
     return TradeOffer(
       id: 'trade_${DateTime.now().millisecondsSinceEpoch}',
-      proposerId: proposerId,
+      fromPlayerId: proposerId,
+      toPlayerId: toPlayerId ?? '', // nullの場合は全員に提案
       offering: offering,
       requesting: requesting,
       createdAt: DateTime.now(),

@@ -203,7 +203,7 @@ class GameController extends ChangeNotifier {
     if (_state == null || _state!.currentTradeOffer == null) return false;
 
     final offer = _state!.currentTradeOffer!;
-    final proposer = _state!.players.firstWhere((p) => p.id == offer.proposerId);
+    final proposer = _state!.players.firstWhere((p) => p.id == offer.fromPlayerId);
     final acceptor = _state!.players.firstWhere((p) => p.id == acceptorId);
 
     final success = _tradeService.executePlayerTrade(offer, proposer, acceptor);
