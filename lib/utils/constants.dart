@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+// modelsパッケージからenums.dartをimport
 import 'package:test_web_app/models/enums.dart';
 
 /// ゲーム定数
