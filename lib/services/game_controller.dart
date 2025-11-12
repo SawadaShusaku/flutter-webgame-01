@@ -347,12 +347,49 @@ class GameController extends ChangeNotifier {
   /// 辺がタップされた時の処理
   Future<void> onEdgeTapped(String edgeId) async {
     if (_buildMode == BuildMode.road) {
+      // 初期配置フェーズの場合、道路は集落に隣接している必要がある
+      if (_state?.phase == GamePhase.setup) {
+        if (!_isValidSetupRoad(edgeId)) {
+          // 無効な配置の場合は何もしない
+          return;
+        }
+      }
+
       final success = await buildRoad(edgeId);
       if (success) {
         _buildMode = BuildMode.none;
         notifyListeners();
       }
     }
+  }
+
+  /// 初期配置で道路が有効か確認
+  bool _isValidSetupRoad(String edgeId) {
+    if (_state == null) return false;
+
+    final edge = _state!.edges.firstWhere(
+      (e) => e.id == edgeId,
+      orElse: () => _state!.edges.first,
+    );
+
+    final currentPlayerId = _state!.currentPlayer.id;
+
+    // 辺の両端の頂点を確認
+    final vertex1 = _state!.vertices.firstWhere(
+      (v) => v.id == edge.vertex1Id,
+      orElse: () => _state!.vertices.first,
+    );
+    final vertex2 = _state!.vertices.firstWhere(
+      (v) => v.id == edge.vertex2Id,
+      orElse: () => _state!.vertices.first,
+    );
+
+    // どちらかの頂点に自分の集落があるか確認
+    final hasOwnSettlement =
+        (vertex1.building != null && vertex1.building!.playerId == currentPlayerId) ||
+        (vertex2.building != null && vertex2.building!.playerId == currentPlayerId);
+
+    return hasOwnSettlement;
   }
 
   /// CPUのターンを実行（内部メソッド）

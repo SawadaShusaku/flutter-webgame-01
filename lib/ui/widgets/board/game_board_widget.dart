@@ -9,6 +9,8 @@ import 'package:test_web_app/models/building.dart';
 import 'package:test_web_app/models/road.dart';
 import 'package:test_web_app/models/player.dart';
 import 'package:test_web_app/models/enums.dart';
+import 'package:test_web_app/models/trade_offer.dart';
+import 'package:test_web_app/models/robber.dart';
 
 // servicesパッケージからimport
 import 'package:test_web_app/services/board_generator.dart';
@@ -18,6 +20,8 @@ class GameBoardWidget extends StatefulWidget {
   final List<HexTile> hexTiles;
   final List<Vertex> vertices;
   final List<Edge> edges;
+  final List<Harbor>? harbors; // 港のリスト
+  final Robber? robber; // 盗賊の位置
   final Map<String, Player>? players; // プレイヤーID -> Player
   final Function(Vertex)? onVertexTap;
   final Function(Edge)? onEdgeTap;
@@ -30,6 +34,8 @@ class GameBoardWidget extends StatefulWidget {
     required this.hexTiles,
     required this.vertices,
     required this.edges,
+    this.harbors,
+    this.robber,
     this.players,
     this.onVertexTap,
     this.onEdgeTap,
@@ -74,6 +80,8 @@ class _GameBoardWidgetState extends State<GameBoardWidget> {
             hexTiles: widget.hexTiles,
             vertices: widget.vertices,
             edges: widget.edges,
+            harbors: widget.harbors ?? [],
+            robber: widget.robber,
             players: widget.players,
             panOffset: _panOffset,
             scale: _scale,
@@ -157,6 +165,8 @@ class GameBoardPainter extends CustomPainter {
   final List<HexTile> hexTiles;
   final List<Vertex> vertices;
   final List<Edge> edges;
+  final List<Harbor> harbors;
+  final Robber? robber;
   final Map<String, Player>? players;
   final Offset panOffset;
   final double scale;
@@ -167,6 +177,8 @@ class GameBoardPainter extends CustomPainter {
     required this.hexTiles,
     required this.vertices,
     required this.edges,
+    required this.harbors,
+    this.robber,
     this.players,
     required this.panOffset,
     required this.scale,
@@ -185,19 +197,29 @@ class GameBoardPainter extends CustomPainter {
     canvas.translate(panOffset.dx, panOffset.dy);
     canvas.scale(scale);
 
-    // 描画順序：タイル → 辺 → 頂点
+    // 描画順序：タイル → 港 → 盗賊 → 辺 → 頂点
 
     // 1. 六角形タイルを描画
     for (final hexTile in hexTiles) {
       _drawHexTile(canvas, hexTile);
     }
 
-    // 2. 辺を描画
+    // 2. 港を描画
+    for (final harbor in harbors) {
+      _drawHarbor(canvas, harbor);
+    }
+
+    // 3. 盗賊を描画
+    if (robber != null) {
+      _drawRobber(canvas, robber!);
+    }
+
+    // 4. 辺を描画
     for (final edge in edges) {
       _drawEdge(canvas, edge);
     }
 
-    // 3. 頂点を描画
+    // 5. 頂点を描画
     for (final vertex in vertices) {
       _drawVertex(canvas, vertex);
     }
@@ -560,11 +582,126 @@ class GameBoardPainter extends CustomPainter {
     }
   }
 
+  /// 港を描画
+  void _drawHarbor(Canvas canvas, Harbor harbor) {
+    // 港に接続されている頂点の位置を取得
+    if (harbor.vertexIds.isEmpty) return;
+
+    final positions = harbor.vertexIds
+        .map((id) => vertices.firstWhere((v) => v.id == id, orElse: () => vertices.first))
+        .map((v) => v.position)
+        .toList();
+
+    if (positions.isEmpty) return;
+
+    // 港の中心位置を計算（接続頂点の平均）
+    final centerX = positions.fold<double>(0, (sum, pos) => sum + pos.dx) / positions.length;
+    final centerY = positions.fold<double>(0, (sum, pos) => sum + pos.dy) / positions.length;
+    final center = Offset(centerX, centerY);
+
+    // 港アイコンの描画
+    final paint = Paint()
+      ..color = _getHarborColor(harbor.type)
+      ..style = PaintingStyle.fill;
+
+    // 港の背景円
+    canvas.drawCircle(center, 20, paint);
+
+    // 港の枠線
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    canvas.drawCircle(center, 20, borderPaint);
+
+    // 港のレート表示
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: '${harbor.tradeRate}:1',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(center.dx - textPainter.width / 2, center.dy - textPainter.height / 2),
+    );
+  }
+
+  /// 盗賊を描画
+  void _drawRobber(Canvas canvas, Robber robber) {
+    // 盗賊がいるタイルを探す
+    final hexTile = hexTiles.firstWhere(
+      (tile) => tile.id == robber.hexTileId,
+      orElse: () => hexTiles.first,
+    );
+
+    final center = hexTile.position;
+
+    // 盗賊の影
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawCircle(center + const Offset(2, 2), 18, shadowPaint);
+
+    // 盗賊の本体（黒い円）
+    final robberPaint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, 18, robberPaint);
+
+    // 盗賊の枠線
+    final borderPaint = Paint()
+      ..color = Colors.red
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    canvas.drawCircle(center, 18, borderPaint);
+
+    // 盗賊アイコン（🏴‍☠️的なシンボル）
+    final textPainter = TextPainter(
+      text: const TextSpan(
+        text: '👤',
+        style: TextStyle(fontSize: 20),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(center.dx - textPainter.width / 2, center.dy - textPainter.height / 2),
+    );
+  }
+
+  /// 港の色を取得
+  Color _getHarborColor(HarborType type) {
+    switch (type) {
+      case HarborType.generic:
+        return Colors.blueGrey;
+      case HarborType.lumber:
+        return const Color(0xFF2E7D32);
+      case HarborType.brick:
+        return const Color(0xFFD84315);
+      case HarborType.wool:
+        return const Color(0xFF9CCC65);
+      case HarborType.grain:
+        return const Color(0xFFFDD835);
+      case HarborType.ore:
+        return const Color(0xFF616161);
+    }
+  }
+
   @override
   bool shouldRepaint(covariant GameBoardPainter oldDelegate) {
     return hexTiles != oldDelegate.hexTiles ||
         vertices != oldDelegate.vertices ||
         edges != oldDelegate.edges ||
+        harbors != oldDelegate.harbors ||
+        robber != oldDelegate.robber ||
         panOffset != oldDelegate.panOffset ||
         scale != oldDelegate.scale ||
         highlightedVertexIds != oldDelegate.highlightedVertexIds ||

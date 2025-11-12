@@ -147,8 +147,23 @@ class CPUService {
   }
 
   bool _isValidSetupRoad(GameState state, Edge edge, Player player) {
-    // TODO: 自分の集落に接続しているか
-    return true;  // 簡易版ではOK
+    // 初期配置では、道路は必ず自分の集落に隣接している必要がある
+    // 辺の両端の頂点を確認
+    final vertex1 = state.vertices.firstWhere(
+      (v) => v.id == edge.vertex1Id,
+      orElse: () => state.vertices.first,
+    );
+    final vertex2 = state.vertices.firstWhere(
+      (v) => v.id == edge.vertex2Id,
+      orElse: () => state.vertices.first,
+    );
+
+    // どちらかの頂点に自分の集落があるか確認
+    final hasOwnSettlement =
+        (vertex1.building != null && vertex1.building!.playerId == player.id) ||
+        (vertex2.building != null && vertex2.building!.playerId == player.id);
+
+    return hasOwnSettlement;
   }
 
   bool _isValidSettlementPlacement(GameState state, Vertex vertex, Player player) {

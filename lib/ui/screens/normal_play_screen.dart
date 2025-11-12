@@ -8,6 +8,8 @@ import 'package:test_web_app/ui/widgets/log/game_log_widget.dart';
 import 'package:test_web_app/ui/widgets/actions/dice_roller.dart';
 import 'package:test_web_app/ui/widgets/bank_trade_dialog.dart';
 import 'package:test_web_app/ui/screens/trade_screen.dart';
+import 'package:test_web_app/ui/widgets/cards/card_hand_widget.dart';
+import 'package:test_web_app/ui/widgets/game_info/achievements_widget.dart';
 import 'package:test_web_app/utils/constants.dart';
 
 class NormalPlayScreen extends StatefulWidget {
@@ -123,6 +125,8 @@ class _NormalPlayScreenState extends State<NormalPlayScreen> {
                         hexTiles: controller.state?.board ?? [],
                         vertices: controller.state?.vertices ?? [],
                         edges: controller.state?.edges ?? [],
+                        harbors: controller.state?.harbors,
+                        robber: controller.state?.robber,
                         onVertexTap: (vertex) => controller.onVertexTapped(vertex.id),
                         onEdgeTap: (edge) => controller.onEdgeTapped(edge.id),
                         highlightedVertexIds: _getHighlightedVertices(controller),
@@ -180,6 +184,8 @@ class _NormalPlayScreenState extends State<NormalPlayScreen> {
                 hexTiles: controller.state?.board ?? [],
                 vertices: controller.state?.vertices ?? [],
                 edges: controller.state?.edges ?? [],
+                harbors: controller.state?.harbors,
+                robber: controller.state?.robber,
                 onVertexTap: (vertex) => controller.onVertexTapped(vertex.id),
                 onEdgeTap: (edge) => controller.onEdgeTapped(edge.id),
                 highlightedVertexIds: _getHighlightedVertices(controller),
@@ -265,6 +271,20 @@ class _NormalPlayScreenState extends State<NormalPlayScreen> {
             ),
           ),
           const Spacer(),
+
+          // 特別ボーナス表示
+          if (state != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: AchievementsWidget(
+                longestRoadPlayer: state.longestRoadPlayer,
+                longestRoadLength: state.longestRoadLength,
+                largestArmyPlayer: state.largestArmyPlayer,
+                largestArmySize: state.largestArmySize,
+                compact: true,
+              ),
+            ),
+
           // 勝利点
           Row(
             children: [
@@ -450,6 +470,20 @@ class _NormalPlayScreenState extends State<NormalPlayScreen> {
             ),
           ),
 
+          const SizedBox(height: 16),
+
+          // 発展カード手札表示
+          if (controller.currentPlayer != null &&
+              controller.currentPlayer!.developmentCards.isNotEmpty)
+            SizedBox(
+              height: 100,
+              child: CardHandWidget(
+                player: controller.currentPlayer!,
+                canPlayCards: controller.hasRolledDice,
+                showFaceUp: true,
+              ),
+            ),
+
           const SizedBox(height: 8),
 
           // 交渉ボタン
@@ -519,12 +553,38 @@ class _NormalPlayScreenState extends State<NormalPlayScreen> {
   /// BuildModeに応じてハイライトする辺のIDを取得
   Set<String> _getHighlightedEdges(GameController controller) {
     if (controller.buildMode == BuildMode.road) {
-      // 簡易版: 空いている辺のみハイライト
-      return controller.state?.edges
-              .where((e) => !e.hasRoad)
-              .map((e) => e.id)
-              .toSet() ??
-          {};
+      final state = controller.state;
+      if (state == null) return {};
+
+      final currentPlayerId = controller.currentPlayer?.id;
+      if (currentPlayerId == null) return {};
+
+      // 初期配置フェーズの場合、集落に隣接する辺のみハイライト
+      if (state.phase == GamePhase.setup) {
+        return state.edges.where((edge) {
+          if (edge.hasRoad) return false;
+
+          // 辺の両端の頂点を確認
+          final vertex1 = state.vertices.firstWhere(
+            (v) => v.id == edge.vertex1Id,
+            orElse: () => state.vertices.first,
+          );
+          final vertex2 = state.vertices.firstWhere(
+            (v) => v.id == edge.vertex2Id,
+            orElse: () => state.vertices.first,
+          );
+
+          // どちらかの頂点に自分の集落があるか確認
+          return (vertex1.building != null && vertex1.building!.playerId == currentPlayerId) ||
+              (vertex2.building != null && vertex2.building!.playerId == currentPlayerId);
+        }).map((e) => e.id).toSet();
+      }
+
+      // 通常フェーズ: 空いている辺のみハイライト
+      return state.edges
+          .where((e) => !e.hasRoad)
+          .map((e) => e.id)
+          .toSet();
     }
     return {};
   }
