@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'dart:async';
 import 'package:test_web_app/models/game_state.dart';
 
 /// サイコロを振るウィジェット
@@ -27,6 +28,12 @@ class _DiceRollerState extends State<DiceRoller>
   late Animation<double> _rotationAnimation;
   late Animation<double> _scaleAnimation;
   bool _isRolling = false;
+
+  // アニメーション中に表示するランダムな目
+  int _animatedDie1 = 1;
+  int _animatedDie2 = 1;
+  Timer? _randomChangeTimer;
+  final math.Random _random = math.Random();
 
   @override
   void initState() {
@@ -72,6 +79,7 @@ class _DiceRollerState extends State<DiceRoller>
 
   @override
   void dispose() {
+    _randomChangeTimer?.cancel();
     _animationController.dispose();
     super.dispose();
   }
@@ -80,7 +88,20 @@ class _DiceRollerState extends State<DiceRoller>
     setState(() => _isRolling = true);
     _animationController.forward(from: 0.0);
 
+    // ランダムに目を変更するタイマーを開始（50msごと）
+    _randomChangeTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      if (mounted) {
+        setState(() {
+          _animatedDie1 = _random.nextInt(6) + 1;
+          _animatedDie2 = _random.nextInt(6) + 1;
+        });
+      }
+    });
+
+    // アニメーション終了後にタイマーを停止
     await Future.delayed(const Duration(milliseconds: 500));
+    _randomChangeTimer?.cancel();
+
     widget.onRoll();
 
     await Future.delayed(const Duration(milliseconds: 100));
@@ -92,38 +113,43 @@ class _DiceRollerState extends State<DiceRoller>
     final canRollNow = widget.canRoll && !_isRolling;
     final lastRoll = widget.lastRoll;
 
+    // アニメーション中はランダムな目、それ以外は実際の出目を表示
+    final die1Value = _isRolling ? _animatedDie1 : (lastRoll?.die1 ?? 1);
+    final die2Value = _isRolling ? _animatedDie2 : (lastRoll?.die2 ?? 1);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // サイコロ表示
-        if (lastRoll != null) ...[
+        if (lastRoll != null || _isRolling) ...[
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildDice(lastRoll.die1),
+              _buildDice(die1Value),
               const SizedBox(width: 16),
-              _buildDice(lastRoll.die2),
+              _buildDice(die2Value),
             ],
           ),
           const SizedBox(height: 8),
-          // 合計値表示
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: lastRoll.total == 7
-                  ? Colors.red.shade700
-                  : Colors.orange.shade700,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '合計: ${lastRoll.total}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+          // 合計値表示（アニメーション中は非表示）
+          if (!_isRolling && lastRoll != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: lastRoll.total == 7
+                    ? Colors.red.shade700
+                    : Colors.orange.shade700,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '合計: ${lastRoll.total}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
         ],
         const SizedBox(height: 16),
         // ボタン
