@@ -25,6 +25,12 @@ class GameState {
   Robber? robber;  // 盗賊（初期位置は砂漠タイル）
   TradeOffer? currentTradeOffer;  // 現在の交易提案
 
+  // 特別ボーナス
+  Player? longestRoadPlayer;  // 最長交易路保持者
+  int longestRoadLength;  // 最長交易路の長さ
+  Player? largestArmyPlayer;  // 最大騎士力保持者
+  int largestArmySize;  // 騎士カード使用数
+
   final List<GameEvent> eventLog;
 
   GameState({
@@ -41,6 +47,10 @@ class GameState {
     this.lastDiceRoll,
     this.robber,
     this.currentTradeOffer,
+    this.longestRoadPlayer,
+    this.longestRoadLength = 0,
+    this.largestArmyPlayer,
+    this.largestArmySize = 0,
     List<GameEvent>? eventLog,
   }) : harbors = harbors ?? [],
        eventLog = eventLog ?? [];

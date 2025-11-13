@@ -266,11 +266,6 @@ class GameBoardPainter extends CustomPainter {
     if (hexTile.number != null && hexTile.terrain != TerrainType.desert) {
       _drawNumberChip(canvas, center, hexTile.number!);
     }
-
-    // 盗賊の描画
-    if (hexTile.hasRobber) {
-      _drawRobber(canvas, center);
-    }
   }
 
   /// 地形タイプに応じた色を取得
@@ -349,44 +344,6 @@ class GameBoardPainter extends CustomPainter {
         canvas.drawCircle(Offset(dotX, center.dy + dotY), dotRadius, dotPaint);
       }
     }
-  }
-
-  /// 盗賊の描画
-  void _drawRobber(Canvas canvas, Offset center) {
-    const robberSize = 25.0;
-
-    final bodyPaint = Paint()
-      ..color = Colors.black
-      ..style = PaintingStyle.fill;
-
-    // 体部分
-    canvas.drawCircle(
-      Offset(center.dx, center.dy + robberSize * 0.1),
-      robberSize * 0.4,
-      bodyPaint,
-    );
-
-    // 帽子部分
-    final hatPath = Path();
-    hatPath.moveTo(center.dx - robberSize * 0.3, center.dy);
-    hatPath.lineTo(center.dx + robberSize * 0.3, center.dy);
-    hatPath.lineTo(center.dx + robberSize * 0.2, center.dy - robberSize * 0.5);
-    hatPath.lineTo(center.dx - robberSize * 0.2, center.dy - robberSize * 0.5);
-    hatPath.close();
-
-    canvas.drawPath(hatPath, bodyPaint);
-
-    // アウトライン
-    final outlinePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-
-    canvas.drawCircle(
-      Offset(center.dx, center.dy + robberSize * 0.1),
-      robberSize * 0.4,
-      outlinePaint,
-    );
   }
 
   /// 辺を描画
@@ -637,7 +594,7 @@ class GameBoardPainter extends CustomPainter {
   void _drawRobber(Canvas canvas, Robber robber) {
     // 盗賊がいるタイルを探す
     final hexTile = hexTiles.firstWhere(
-      (tile) => tile.id == robber.hexTileId,
+      (tile) => tile.id == robber.currentHexId,
       orElse: () => hexTiles.first,
     );
 
